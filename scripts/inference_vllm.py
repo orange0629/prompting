@@ -5,7 +5,7 @@ from lib.dataloader import init_benchmark
 
 model_dir = "/shared/4/models/llama2/pytorch-versions/llama-2-7b-chat/"
 benchmark = "arc"
-system_prompts_dir = "good_property_mmlu.csv"
+system_prompts_dir = "./data/system_prompts/Prompt-Scores_Good-Property.csv"
 cache_dir= "/shared/4/models/"
 
 system_prompts_df = pd.read_csv(system_prompts_dir)

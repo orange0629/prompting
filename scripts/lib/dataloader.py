@@ -64,7 +64,7 @@ class benchmark_arc:
                     break
             pred_label_list.append(model_choice_tmp)
             if model_choice_tmp == "Z":
-                errors += 1
+                error_num += 1
         return accuracy_score(self.true_label_list, pred_label_list), error_num
 
 def init_benchmark(name="mmlu"):
