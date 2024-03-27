@@ -2,11 +2,23 @@ from vllm import LLM
 import pandas as pd
 from tqdm import tqdm
 from lib.dataloader import init_benchmark
+import argparse
 
-model_dir = "/shared/4/models/llama2/pytorch-versions/llama-2-7b-chat/"
-benchmark = "arc"
-system_prompts_dir = "./data/system_prompts/Prompt-Scores_Good-Property.csv"
 cache_dir= "/shared/4/models/"
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Script to run predictions with a specified GPU and data file.")
+    parser.add_argument("-model_dir", help="Model to evaluate", type=str, default=None, required=True)
+    parser.add_argument("-benchmark", help="Benchmark to evaluate", type=str, default="mmlu")
+    parser.add_argument("-system_prompts_dir", help="Path to system prompts", type=str, required=True)
+    return parser.parse_args()
+
+args = parse_args()
+model_dir = args.model_dir
+benchmark = args.benchmark.lower()
+system_prompts_dir = args.system_prompts_dir
+model_name = model_dir.split("/")[-1] if "/" in model_dir else model_dir
+
 
 system_prompts_df = pd.read_csv(system_prompts_dir)
 system_prompts = system_prompts_df["Prompt"]
@@ -23,8 +35,7 @@ llama_template = '''[INST] <<SYS>>
 <</SYS>>
 {user_prompt}[/INST]Answer:'''
 
-acc_list = []
-error_list = []
+metric_dict = {}
 benchmark_obj = init_benchmark(name=benchmark)
 q_list = benchmark_obj.load_question_list()
 
@@ -34,10 +45,15 @@ for system_prompt in tqdm(system_prompts):
         full_prompt = llama_template.format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
         answer_prompts.append(full_prompt)
     outputs = llm.generate(answer_prompts)  # Generate texts from the prompts.
-    score, error_num = benchmark_obj.eval_question_list(outputs, vllm=True)
-    acc_list.append(score)
-    error_list.append(error_num)
+    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=True, save_intermediate=(True, f"{model_name}/{system_prompt}"))
+    for key in metric_dict_single:
+        if key not in metric_dict:
+            metric_dict[f"{model_name}/{key}"] = [metric_dict_single[key]]
+        else:
+            metric_dict[f"{model_name}/{key}"].append(metric_dict_single[key])
 
-system_prompts_df[f"{benchmark.upper()}_acc"] = acc_list
-system_prompts_df[f"{benchmark.upper()}_error"] = error_list
+# Read again to prevent overwriting
+system_prompts_df = pd.read_csv(system_prompts_dir)
+for key in metric_dict:
+    system_prompts_df[key] = metric_dict[key]
 system_prompts_df.to_csv(system_prompts_dir, index=False)
