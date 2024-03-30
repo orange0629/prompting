@@ -7,7 +7,7 @@ __pycache__/
 .ipynb_checkpoints
 
 # Benchmarks
-data/benchmark/
+# data/benchmark/
 
 # Results
 results/
