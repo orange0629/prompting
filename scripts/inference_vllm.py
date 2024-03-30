@@ -47,10 +47,11 @@ for system_prompt in tqdm(system_prompts):
     outputs = llm.generate(answer_prompts)  # Generate texts from the prompts.
     metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=True, save_intermediate=(True, f"{model_name}/{system_prompt}"))
     for key in metric_dict_single:
-        if key not in metric_dict:
-            metric_dict[f"{model_name}/{key}"] = [metric_dict_single[key]]
+        named_key = f"{model_name}/{key}"
+        if named_key not in metric_dict:
+            metric_dict[named_key] = [metric_dict_single[key]]
         else:
-            metric_dict[f"{model_name}/{key}"].append(metric_dict_single[key])
+            metric_dict[named_key].append(metric_dict_single[key])
 
 # Read again to prevent overwriting
 system_prompts_df = pd.read_csv(system_prompts_dir)

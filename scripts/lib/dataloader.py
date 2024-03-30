@@ -50,7 +50,7 @@ class benchmark_mmlu(benchmark_base):
             q_text = f"{item['question'].strip()}\nA. {item['option1']}\nB. {item['option2']}\nC. {item['option3']}\nD. {item['option4']}\n"
             self.question_list.append(q_text)
         
-        self.true_label_list = self.data_df["true_option"]
+        self.true_label_list = list(self.data_df["true_option"])
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
@@ -69,7 +69,7 @@ class benchmark_mmlu(benchmark_base):
         if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1])
 
         metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list) - error_num) / (len(pred_label_list) - error_num),
+                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
                    f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -106,7 +106,7 @@ class benchmark_arc(benchmark_base):
         if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1])
         
         metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list) - error_num) / (len(pred_label_list) - error_num),
+                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
                    f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -141,7 +141,7 @@ class benchmark_hellaswag(benchmark_base):
         if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1])
 
         metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list) - error_num) / (len(pred_label_list) - error_num),
+                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
                    f"{self.name.upper()}_error": error_num}
 
         return metrics
