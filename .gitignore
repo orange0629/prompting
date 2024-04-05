@@ -10,7 +10,7 @@ __pycache__/
 # data/benchmark/
 
 # Results
-results/
+# results/
 
 # Shells
 *.sh
