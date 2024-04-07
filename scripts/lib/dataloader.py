@@ -58,7 +58,10 @@ class benchmark_mmlu(benchmark_base):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
-            text = pred_text.outputs[0].text.replace("\n", "").strip()
+            if vllm:
+                text = pred_text.outputs[0].text.replace("\n", "").strip()
+            else:
+                text = pred_text.replace("\n", "").strip()
             model_choice_tmp = self.get_choice_from_text(text)
             if model_choice_tmp == "Z":
                 pred_label_list.append(text)
@@ -95,7 +98,10 @@ class benchmark_arc(benchmark_base):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
-            text = pred_text.outputs[0].text.replace("\n", "").strip()
+            if vllm:
+                text = pred_text.outputs[0].text.replace("\n", "").strip()
+            else:
+                text = pred_text.replace("\n", "").strip()
             model_choice_tmp = self.get_choice_from_text(text)
             if model_choice_tmp == "Z":
                 pred_label_list.append(text)
@@ -130,7 +136,10 @@ class benchmark_hellaswag(benchmark_base):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
-            text = pred_text.outputs[0].text.replace("\n", "").strip()
+            if vllm:
+                text = pred_text.outputs[0].text.replace("\n", "").strip()
+            else:
+                text = pred_text.replace("\n", "").strip()
             model_choice_tmp = self.get_choice_from_text(text)
             if model_choice_tmp == "Z":
                 pred_label_list.append(text)
