@@ -1,8 +1,9 @@
-from transformers import LlamaTokenizer, LlamaForCausalLM, BitsAndBytesConfig
+from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 import pandas as pd
 from tqdm import tqdm
 from lib.dataloader import init_benchmark
 import argparse
+import torch
 
 cache_dir= "/shared/4/models/"
 BATCH_SIZE = 16
@@ -32,20 +33,23 @@ system_prompts_df = pd.read_csv(system_prompts_dir)
 system_prompts = system_prompts_df["Prompt"]
 
 # Create an LLM.
-tokenizer = LlamaTokenizer.from_pretrained(model_dir, 
+tokenizer = AutoTokenizer.from_pretrained(model_dir, 
                                            cache_dir=cache_dir,
                                            padding_side='left',
                                            )
 if not tokenizer.pad_token:
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.pad_token_id = tokenizer.eos_token_id
-quantization_config = BitsAndBytesConfig(load_in_8bit=True)
-model = LlamaForCausalLM.from_pretrained(model_dir, 
-                                         cache_dir=cache_dir,
-                                         device_map="auto",
-                                         #quantization_config=quantization_config,
-                                         #load_in_8bit=True
-                                        )
+
+quantization_config = BitsAndBytesConfig(load_in_8bit=True,
+                                         llm_int8_skip_modules=["mamba"])
+model = AutoModelForCausalLM.from_pretrained(model_dir,
+                                             cache_dir=cache_dir,
+                                             trust_remote_code=True,
+                                             device_map="auto",
+                                             torch_dtype=torch.bfloat16,
+                                             attn_implementation="flash_attention_2",
+                                             quantization_config=quantization_config)
 
 user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
 
