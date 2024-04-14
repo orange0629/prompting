@@ -38,13 +38,13 @@ for key in llm_template_dict:
 system_prompts_df = pd.read_csv(system_prompts_dir)
 system_prompts = system_prompts_df["Prompt"]
 
-if args.vllm:
+if args.hf:
+    llm = hfmodel(model_dir, cache_dir, BATCH_SIZE=16)
+else:
     if model_type == "command-r":
         llm = LLM(model=model_dir, download_dir=cache_dir, tensor_parallel_size=args.multi_thread)
     else:
         llm = LLM(model=model_dir, download_dir=cache_dir, trust_remote_code=True, tensor_parallel_size=args.multi_thread)  # Create an LLM.
-else:
-    llm = hfmodel(model_dir, cache_dir, BATCH_SIZE=16)
 
 # Here's Mingqian's prompt
 #template = '''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n### Instruction:\n{{You will be presented with a role-playing context followed by a multiple-choice question. {role_context} Select only the option number that corresponds to the correct answer for the following question.}}\n\n### Input:\n{{{{{question}}} Provide the number of the correct option without explaining your reasoning.}} \n\n### Response:'''
