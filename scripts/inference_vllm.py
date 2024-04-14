@@ -2,9 +2,10 @@ from vllm import LLM
 import pandas as pd
 from tqdm import tqdm
 from lib.dataloader import init_benchmark
+from lib.hfmodel import hfmodel
 import argparse
 
-cache_dir= "/shared/4/models/"
+cache_dir= "/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/"
 
 llama_template = '''[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n{user_prompt}[/INST]Answer:'''
 mixtral_template = '''<s> [INST] {system_prompt}\n{user_prompt} [/INST] Answer:'''
@@ -21,6 +22,7 @@ def parse_args():
     parser.add_argument("-benchmark", help="Benchmark to evaluate", type=str, default="mmlu")
     parser.add_argument("-system_prompts_dir", help="Path to system prompts", type=str, required=True)
     parser.add_argument("-multi_thread", help="Multi Thread Inference", type=int, default=1)
+    parser.add_argument('--hf', action = 'store_true', help = 'Use Huggingface Transformer', default=False)
     return parser.parse_args()
 
 args = parse_args()
@@ -36,10 +38,13 @@ for key in llm_template_dict:
 system_prompts_df = pd.read_csv(system_prompts_dir)
 system_prompts = system_prompts_df["Prompt"]
 
-if model_type == "command-r":
-    llm = LLM(model=model_dir, download_dir=cache_dir, tensor_parallel_size=args.multi_thread)
+if args.vllm:
+    if model_type == "command-r":
+        llm = LLM(model=model_dir, download_dir=cache_dir, tensor_parallel_size=args.multi_thread)
+    else:
+        llm = LLM(model=model_dir, download_dir=cache_dir, trust_remote_code=True, tensor_parallel_size=args.multi_thread)  # Create an LLM.
 else:
-    llm = LLM(model=model_dir, download_dir=cache_dir, trust_remote_code=True, tensor_parallel_size=args.multi_thread)  # Create an LLM.
+    llm = hfmodel(model_dir, cache_dir, BATCH_SIZE=16)
 
 # Here's Mingqian's prompt
 #template = '''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n### Instruction:\n{{You will be presented with a role-playing context followed by a multiple-choice question. {role_context} Select only the option number that corresponds to the correct answer for the following question.}}\n\n### Input:\n{{{{{question}}} Provide the number of the correct option without explaining your reasoning.}} \n\n### Response:'''
