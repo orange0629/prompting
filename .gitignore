@@ -2,15 +2,17 @@
 __pycache__/
 *.py[cod]
 *$py.class
+triton/
 
 # Jupyter Notebook
 .ipynb_checkpoints
 
 # Benchmarks
-data/benchmark/
+# data/benchmark/
 
 # Results
-results/
+# results/
 
 # Shells
 *.sh
+*.out
