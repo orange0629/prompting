@@ -53,7 +53,6 @@ else:
 
 user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
 
-
 metric_dict = {}
 benchmark_obj = init_benchmark(name=benchmark)
 q_list = benchmark_obj.load_question_list()
@@ -64,7 +63,7 @@ for system_prompt in tqdm(system_prompts):
         full_prompt = llm_template_dict[model_type].format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
         answer_prompts.append(full_prompt)
     outputs = llm.generate(answer_prompts)  # Generate texts from the prompts.
-    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=True, save_intermediate=(True, model_name, system_prompt))
+    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=(True, model_name, system_prompt))
     for key in metric_dict_single:
         named_key = f"{model_name}/{key}"
         if named_key not in metric_dict:

@@ -19,10 +19,11 @@ class hfmodel:
         
         self.model = AutoModelForCausalLM.from_pretrained(model_dir,
                                                      cache_dir=cache_dir,
-                                                     trust_remote_code=True,device_map="auto",
+                                                     trust_remote_code=True,
+                                                     device_map="auto",
                                                      torch_dtype=torch.bfloat16,
                                                      attn_implementation="flash_attention_2",
-                                                     quantization_config=quantization_config
+                                                     #quantization_config=quantization_config
                                                      )
     
     def generate(self, answer_prompts):

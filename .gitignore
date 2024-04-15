@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+triton/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -14,3 +15,4 @@ __pycache__/
 
 # Shells
 *.sh
+*.out
