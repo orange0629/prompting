@@ -32,5 +32,6 @@ class hfmodel:
             ques_batch = answer_prompts[idx:(idx+self.BATCH_SIZE)]
             ques_batch_tokenized = self.tokenizer(ques_batch, return_tensors='pt', truncation=True, max_length=512, padding=True)
             answ_ids = self.model.generate(**ques_batch_tokenized.to('cuda'), max_new_tokens=30, pad_token_id=self.tokenizer.pad_token_id)
+            answ_ids = answ_ids[:, ques_batch_tokenized['input_ids'].shape[1]:] # Only consider new generated stuff
             outputs.extend(self.tokenizer.batch_decode(answ_ids, skip_special_tokens=True))
         return outputs
