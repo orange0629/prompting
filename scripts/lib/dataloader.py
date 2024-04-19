@@ -1,11 +1,14 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score
+from datasets import load_metric
+import lib.utils
 import os
 import re
 
 data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv", 
             "arc": "./data/benchmark/arc/ARC-Challenge-Test.csv",
-            "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl"}
+            "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl",
+            "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv"}
 save_intermediate_dir = "./results/benchmark"
 
 letter2num = {"A": 1, "B": 2, "C": 3, "D": 4, "Z": 5}
@@ -161,6 +164,44 @@ class benchmark_hellaswag(benchmark_base):
 
         return metrics
 
+class benchmark_truthfulqa(benchmark_base):
+    def __init__(self):
+        self.name = "truthfulqa"
+        self.data_df = pd.read_csv(data_dir[self.name])
+
+        self.question_list = self.data_df["Question"]
+        self.true_label_list = list(self.data_df["Best Answer"])
+
+        self.correct_answer_list = [lib.utils.split_multi_answer(text, add_no_comment=True) for text in self.data_df["Correct Answers"]]
+        self.incorrect_answer_list = [lib.utils.split_multi_answer(text) for text in self.data_df["Incorrect Answers"]]
+
+        self.bleurt = load_metric("bleurt")
+
+    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=(False, "", "")):
+        pred_label_list = []
+        for pred_text in pred_text_list:
+            if vllm:
+                text = self.clean_text(pred_text.outputs[0].text)
+            else:
+                text = self.clean_text(pred_text)
+            pred_label_list.append(text)
+        
+        if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+
+        bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
+        bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+        #rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+
+        metrics = {f"{self.name.upper()}_BLEURT_acc": bleurt_tmp["BLEURT_acc"],
+                   f"{self.name.upper()}_BLEU_acc": bleu_tmp["BLEU_acc"],
+                   #f"{self.name.upper()}_rouge1_acc": rouge_tmp["rouge1_acc"],
+                   f"{self.name.upper()}_BLEURT_full": bleurt_tmp,
+                   f"{self.name.upper()}_BLEU_full": bleu_tmp,
+                   #f"{self.name.upper()}_ROUGE_full": rouge_tmp,
+                   }
+
+        return metrics
+
 def init_benchmark(name="mmlu") -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu()
@@ -168,3 +209,5 @@ def init_benchmark(name="mmlu") -> benchmark_base:
         return benchmark_arc()
     elif name == "hellaswag":
         return benchmark_hellaswag()
+    elif name == "truthfulqa":
+        return benchmark_truthfulqa()

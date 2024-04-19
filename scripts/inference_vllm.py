@@ -1,11 +1,11 @@
-from vllm import LLM
+from vllm import LLM, SamplingParams
 import pandas as pd
 from tqdm import tqdm
 from lib.dataloader import init_benchmark
 from lib.hfmodel import hfmodel
 import argparse
 
-cache_dir= "/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/"
+cache_dir= "/shared/4/models/"
 
 llama_template = '''[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n{user_prompt}[/INST]Answer:'''
 mixtral_template = '''<s> [INST] {system_prompt}\n{user_prompt} [/INST] Answer:'''
@@ -51,7 +51,10 @@ else:
 #flan_template = '''{role_context} {question} Please select the correct answer number:'''
 #role_context = "You are a helpful assistant."
 
-user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
+if benchmark == "truthfulqa":
+    user_prompt = "{question_prompt}"
+else:
+    user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
 
 metric_dict = {}
 benchmark_obj = init_benchmark(name=benchmark)
@@ -62,7 +65,10 @@ for system_prompt in tqdm(system_prompts):
     for q in q_list:
         full_prompt = llm_template_dict[model_type].format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
         answer_prompts.append(full_prompt)
-    outputs = llm.generate(answer_prompts)  # Generate texts from the prompts.
+    if benchmark == "truthfulqa":
+        outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=64))
+    else:
+        outputs = llm.generate(answer_prompts)
     metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=(True, model_name, system_prompt))
     for key in metric_dict_single:
         named_key = f"{model_name}/{key}"
