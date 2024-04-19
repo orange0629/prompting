@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument("-system_prompts_dir", help="Path to system prompts", type=str, required=True)
     parser.add_argument("-multi_thread", help="Multi Thread Inference", type=int, default=1)
     parser.add_argument('--hf', action = 'store_true', help = 'Use Huggingface Transformer', default=False)
+    parser.add_argument('--dont_save', action = 'store_true', help = 'Not saving intermediate', default=False)
     return parser.parse_args()
 
 args = parse_args()
@@ -61,6 +62,8 @@ benchmark_obj = init_benchmark(name=benchmark)
 q_list = benchmark_obj.load_question_list()
 
 for system_prompt in tqdm(system_prompts):
+    if system_prompt == "empty":
+        system_prompt = ""
     answer_prompts = []
     for q in q_list:
         full_prompt = llm_template_dict[model_type].format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
@@ -69,7 +72,7 @@ for system_prompt in tqdm(system_prompts):
         outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=64))
     else:
         outputs = llm.generate(answer_prompts)
-    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=(True, model_name, system_prompt))
+    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=((not args.dont_save), model_name, system_prompt))
     for key in metric_dict_single:
         named_key = f"{model_name}/{key}"
         if named_key not in metric_dict:
