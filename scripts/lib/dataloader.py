@@ -31,11 +31,11 @@ class benchmark_base:
         save_df.to_csv(save_dir_tmp, index=False)
     
     def clean_text(self, text):
-        pattern = r'[^a-zA-Z0-9 !#$%&()*+,.:;<=>?@_{|}-]'
+        pattern = r"[^a-zA-Z0-9 !#$%&()*'\"+,.:;<=>?@_{|}-]"
         cleaned_text = re.sub(pattern, ' ', text)
         return re.sub("\s\s+" , " ", cleaned_text).strip()
 
-    def result_list_preprocessing(self, pred_text_list, vllm=True, multiple_choice=True):
+    def result_list_preprocessing(self, pred_text_list, vllm=True, multiple_choice=False):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
@@ -162,15 +162,17 @@ class benchmark_truthfulqa(benchmark_base):
         self.correct_answer_list = [lib.utils.split_multi_answer(text, add_no_comment=True) for text in self.data_df["Correct Answers"]]
         self.incorrect_answer_list = [lib.utils.split_multi_answer(text) for text in self.data_df["Incorrect Answers"]]
 
-        self.bleurt = load_metric("bleurt")
+        self.bleurt = None
 
     def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, vllm, multiple_choice=True)
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, vllm, multiple_choice=False)
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
+            if self.bleurt is None:
+                self.bleurt = load_metric("bleurt")
             bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
             bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
             rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
