@@ -5,8 +5,6 @@ from lib.dataloader import init_benchmark
 from lib.hfmodel import hfmodel
 import argparse
 
-cache_dir= "/shared/4/models/"
-
 llama_template = '''[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n{user_prompt}[/INST]Answer:'''
 mixtral_template = '''<s> [INST] {system_prompt}\n{user_prompt} [/INST] Answer:'''
 dbrx_template = '''<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{user_prompt}<|im_end|>\n<|im_start|>assistant\nAnswer:'''
@@ -21,13 +19,15 @@ def parse_args():
     parser.add_argument("-model_dir", help="Model to evaluate", type=str, default=None, required=True)
     parser.add_argument("-benchmark", help="Benchmark to evaluate", type=str, default="mmlu")
     parser.add_argument("-system_prompts_dir", help="Path to system prompts", type=str, required=True)
+    parser.add_argument("-cache_dir", help="Cache location", type=str, default=None)
     parser.add_argument("-multi_thread", help="Multi Thread Inference", type=int, default=1)
     parser.add_argument('--hf', action = 'store_true', help = 'Use Huggingface Transformer', default=False)
-    parser.add_argument('--dont_save', action = 'store_true', help = 'Not saving intermediate', default=False)
+    parser.add_argument('-saving_strategy', help="The result types to save", type=str, default="all", choices=['all','eval','raw','none'])
     return parser.parse_args()
 
 args = parse_args()
 model_dir = args.model_dir
+cache_dir = args.cache_dir
 benchmark = args.benchmark.lower()
 system_prompts_dir = args.system_prompts_dir
 model_name = model_dir.split("/")[-1] if "/" in model_dir else model_dir
@@ -72,7 +72,7 @@ for system_prompt in tqdm(system_prompts):
         outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=64))
     else:
         outputs = llm.generate(answer_prompts)
-    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=((not args.dont_save), model_name, system_prompt))
+    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=(args.saving_strategy, model_name, system_prompt))
     for key in metric_dict_single:
         named_key = f"{model_name}/{key}"
         if named_key not in metric_dict:

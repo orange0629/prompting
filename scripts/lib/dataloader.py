@@ -18,14 +18,6 @@ class benchmark_base:
     def __init__(self):
         self.name = "base"
         self.data_df, self.question_list, self.true_label_list = pd.DataFrame(), [], []
-
-    def get_choice_from_text(self, text) -> str:
-        model_choice_tmp = "Z"
-        for c in text:
-            if c in ["A", "B", "C", "D"]:
-                model_choice_tmp = c
-                break
-        return model_choice_tmp
     
     def save_intermediate(self, pred_label_list, model_name, column_name):
         if not os.path.exists(save_intermediate_dir):
@@ -42,11 +34,36 @@ class benchmark_base:
         pattern = r'[^a-zA-Z0-9 !#$%&()*+,.:;<=>?@_{|}-]'
         cleaned_text = re.sub(pattern, ' ', text)
         return re.sub("\s\s+" , " ", cleaned_text).strip()
+
+    def result_list_preprocessing(self, pred_text_list, vllm=True, multiple_choice=True):
+        error_num = 0
+        pred_label_list = []
+        for pred_text in pred_text_list:
+            if vllm:
+                text = self.clean_text(pred_text.outputs[0].text)
+            else:
+                text = self.clean_text(pred_text)
+            
+            if multiple_choice:
+                model_choice_tmp = "Z"
+                for c in text:
+                    if c in ["A", "B", "C", "D"]:
+                        model_choice_tmp = c
+                        break
+                if model_choice_tmp == "Z":
+                    pred_label_list.append(text)
+                    error_num += 1
+                else:
+                    pred_label_list.append(model_choice_tmp)
+            else:
+                pred_label_list.append(text)
+
+        return pred_label_list, error_num
     
     def load_question_list(self):
         return self.question_list
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=(False, "", "")):
+    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
         return dict()
 
 class benchmark_mmlu(benchmark_base):
@@ -63,26 +80,16 @@ class benchmark_mmlu(benchmark_base):
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=(False, "", "")):
-        error_num = 0
-        pred_label_list = []
-        for pred_text in pred_text_list:
-            if vllm:
-                text = self.clean_text(pred_text.outputs[0].text)
-            else:
-                text = self.clean_text(pred_text)
-            model_choice_tmp = self.get_choice_from_text(text)
-            if model_choice_tmp == "Z":
-                pred_label_list.append(text)
-                error_num += 1
-            else:
-                pred_label_list.append(model_choice_tmp)
+    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, multiple_choice=True)
         
-        if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
-        metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
-                   f"{self.name.upper()}_error": error_num}
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+                    f"{self.name.upper()}_error": error_num}
 
         return metrics
 
@@ -103,26 +110,16 @@ class benchmark_arc(benchmark_base):
                 self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
     
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=(False, "", "")):
-        error_num = 0
-        pred_label_list = []
-        for pred_text in pred_text_list:
-            if vllm:
-                text = self.clean_text(pred_text.outputs[0].text)
-            else:
-                text = self.clean_text(pred_text)
-            model_choice_tmp = self.get_choice_from_text(text)
-            if model_choice_tmp == "Z":
-                pred_label_list.append(text)
-                error_num += 1
-            else:
-                pred_label_list.append(model_choice_tmp)
+    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, multiple_choice=True)
         
-        if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
-        metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
-                   f"{self.name.upper()}_error": error_num}
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+                    f"{self.name.upper()}_error": error_num}
 
         return metrics
 
@@ -141,26 +138,16 @@ class benchmark_hellaswag(benchmark_base):
             self.true_label_list[idx] = num2letter[int(self.true_label_list[idx])+1]
 
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=(False, "", "")):
-        error_num = 0
-        pred_label_list = []
-        for pred_text in pred_text_list:
-            if vllm:
-                text = self.clean_text(pred_text.outputs[0].text)
-            else:
-                text = self.clean_text(pred_text)
-            model_choice_tmp = self.get_choice_from_text(text)
-            if model_choice_tmp == "Z":
-                pred_label_list.append(text)
-                error_num += 1
-            else:
-                pred_label_list.append(model_choice_tmp)
+    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, multiple_choice=True)
         
-        if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
-
-        metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                   f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
-                   f"{self.name.upper()}_error": error_num}
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+                    f"{self.name.upper()}_error": error_num}
 
         return metrics
 
@@ -177,28 +164,24 @@ class benchmark_truthfulqa(benchmark_base):
 
         self.bleurt = load_metric("bleurt")
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=(False, "", "")):
-        pred_label_list = []
-        for pred_text in pred_text_list:
-            if vllm:
-                text = self.clean_text(pred_text.outputs[0].text)
-            else:
-                text = self.clean_text(pred_text)
-            pred_label_list.append(text)
+    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, vllm, multiple_choice=True)
         
-        if save_intermediate[0]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
-        bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
-        bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
-        #rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
+            bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+            rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
 
-        metrics = {f"{self.name.upper()}_BLEURT_acc": bleurt_tmp["BLEURT_acc"],
-                   f"{self.name.upper()}_BLEU_acc": bleu_tmp["BLEU_acc"],
-                   #f"{self.name.upper()}_rouge1_acc": rouge_tmp["rouge1_acc"],
-                   f"{self.name.upper()}_BLEURT_full": bleurt_tmp,
-                   f"{self.name.upper()}_BLEU_full": bleu_tmp,
-                   #f"{self.name.upper()}_ROUGE_full": rouge_tmp,
-                   }
+            metrics = {f"{self.name.upper()}_BLEURT_acc": bleurt_tmp["BLEURT_acc"],
+                    f"{self.name.upper()}_BLEU_acc": bleu_tmp["BLEU_acc"],
+                    f"{self.name.upper()}_rouge1_acc": rouge_tmp["rouge1_acc"],
+                    f"{self.name.upper()}_BLEURT_full": bleurt_tmp,
+                    f"{self.name.upper()}_BLEU_full": bleu_tmp,
+                    f"{self.name.upper()}_ROUGE_full": rouge_tmp,
+                    }
 
         return metrics
 
