@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score
 from datasets import load_metric
+from tqdm import tqdm
 import lib.utils
 import os
 import re
@@ -186,6 +187,35 @@ class benchmark_truthfulqa(benchmark_base):
                     }
 
         return metrics
+
+    def eval_saved_file(self, raw_pred_file, prompt_score_file, metric_list=["bleu"]):
+        raw_pred_df = pd.read_csv(raw_pred_file)
+        prompt_score_df = pd.read_csv(prompt_score_file)
+        model_name = raw_pred_file.split("/")[-1].split("_")[0]
+        
+        metrics = {}
+        for prompt in tqdm(prompt_score_df["Prompt"]):
+            if "bleu" in metric_list:
+                bleu_tmp = lib.utils.bleu_score(raw_pred_df[prompt], self.correct_answer_list, self.incorrect_answer_list)
+                metrics.get(f"{model_name}/{self.name.upper()}_BLEU_acc", []).append(bleu_tmp["BLEU_acc"])
+                metrics.get(f"{model_name}/{self.name.upper()}_BLEU_full", []).append(bleu_tmp)
+            if "rouge" in metric_list:
+                rouge_tmp = lib.utils.rouge_score(raw_pred_df[prompt], self.correct_answer_list, self.incorrect_answer_list)
+                metrics.get(f"{model_name}/{self.name.upper()}_rouge1_acc", []).append(rouge_tmp["rouge1_acc"])
+                metrics.get(f"{model_name}/{self.name.upper()}_ROUGE_full", []).append(rouge_tmp)
+            if "bleurt" in metric_list:
+                if self.bleurt is None:
+                    self.bleurt = load_metric("bleurt")
+                bleurt_tmp = lib.utils.bleurt_score(raw_pred_df[prompt], self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
+                metrics.get(f"{model_name}/{self.name.upper()}_BLEURT_acc", []).append(bleurt_tmp["BLEURT_acc"])
+                metrics.get(f"{model_name}/{self.name.upper()}_BLEURT_full", []).append(bleurt_tmp)
+        
+        prompt_score_df = pd.read_csv(prompt_score_file)
+        for key in metrics:
+            prompt_score_df[key] = metrics[key]
+        prompt_score_df.to_csv(prompt_score_file, index=False)
+
+
 
 def init_benchmark(name="mmlu") -> benchmark_base:
     if name == "mmlu":

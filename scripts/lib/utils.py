@@ -1,6 +1,9 @@
+import os
 import numpy as np
 import sacrebleu
+from tqdm import tqdm
 from rouge_score import rouge_scorer, scoring
+from multiprocessing import Pool
 
 def split_multi_answer(ans, sep=';', close=True, add_no_comment=False):
 
@@ -28,7 +31,7 @@ def split_multi_answer(ans, sep=';', close=True, add_no_comment=False):
 def bleurt_score(prediction, ref_true, ref_false, bleurt):
     assert len(prediction) == len(ref_true) == len(ref_false)
     res_metric = {}
-    for idx in range(len(prediction)):
+    for idx in tqdm(range(len(prediction))):
         scores_true = bleurt.compute(predictions=[prediction[idx]] * len(ref_true[idx]),
                                      references=ref_true[idx])['scores']
         scores_false = bleurt.compute(predictions=[prediction[idx]] * len(ref_false[idx]),
@@ -50,12 +53,58 @@ def bleurt_score(prediction, ref_true, ref_false, bleurt):
     
     return res_metric
 
+def tmp_func(a, b, bleurt):
+    return bleurt.compute(predictions=a,references=b)['scores']
+
+def bleurt_score_parallel(prediction, ref_true, ref_false, bleurt):
+    assert len(prediction) == len(ref_true) == len(ref_false)
+    res_metric = {}
+    
+    pool = Pool(os.cpu_count())
+    
+    mp_list = [([prediction[idx]] * len(ref_true[idx]), ref_true[idx], bleurt) for idx in range(len(prediction))]
+    mapping = pool.starmap(tmp_func, mp_list)
+    scores_true_list = [tmp for tmp in mapping]
+
+    mp_list = [([prediction[idx]] * len(ref_false[idx]), ref_false[idx], bleurt) for idx in range(len(prediction))]
+    mapping = pool.starmap(tmp_func, mp_list)
+    scores_false_list = [tmp for tmp in mapping]
+
+    for idx in range(len(prediction)):
+        #scores_true = bleurt.compute(predictions=[prediction[idx]] * len(ref_true[idx]),
+        #                             references=ref_true[idx])['scores']
+        #scores_false = bleurt.compute(predictions=[prediction[idx]] * len(ref_false[idx]),
+        #                              references=ref_false[idx])['scores']
+        scores_true = scores_true_list[idx]
+        scores_false = scores_false_list[idx]
+
+        for calc in ['max', 'diff', 'acc']:
+            col_name = f'BLEURT_{calc}'
+            if col_name not in res_metric:
+                res_metric[col_name] = []
+
+            if calc == 'max':
+                res_metric[col_name].append(max(scores_true))
+            elif calc == 'diff':
+                res_metric[col_name].append(max(scores_true) - max(scores_false))
+            elif calc == 'acc':
+                res_metric[col_name].append(int(max(scores_true) > max(scores_false)))
+    
+    for key in res_metric:
+        res_metric[key] = np.mean(res_metric[key])
+    
+    return res_metric
+
 def bleu_score(prediction, ref_true, ref_false):
     assert len(prediction) == len(ref_true) == len(ref_false)
     res_metric = {}
+    pool = Pool(os.cpu_count())
     for idx in range(len(prediction)):
         all_refs = ref_true[idx] + ref_false[idx]
-        bleu_scores = [_bleu([ref], [prediction[idx]]) for ref in all_refs]
+        #bleu_scores = [_bleu([ref], [prediction[idx]]) for ref in all_refs]
+        mp_list = [([ref], [prediction[idx]]) for ref in all_refs]
+        mapping = pool.starmap(_bleu, mp_list)
+        bleu_scores = [tmp for tmp in mapping]
         bleu_correct = np.nanmax(bleu_scores[:len(ref_true[idx])])
         bleu_incorrect = np.nanmax(bleu_scores[len(ref_true[idx]):])
 
@@ -80,9 +129,13 @@ def bleu_score(prediction, ref_true, ref_false):
 def rouge_score(prediction, ref_true, ref_false):
     assert len(prediction) == len(ref_true) == len(ref_false)
     res_metric = {}
+    pool = Pool(os.cpu_count())
     for idx in range(len(prediction)):
         all_refs = ref_true[idx] + ref_false[idx]
-        rouge_scores = [_rouge([ref], [prediction[idx]]) for ref in all_refs]
+        #rouge_scores = [_rouge([ref], [prediction[idx]]) for ref in all_refs]
+        mp_list = [([ref], [prediction[idx]]) for ref in all_refs]
+        mapping = pool.starmap(_rouge, mp_list)
+        rouge_scores = [tmp for tmp in mapping]
         
         for score_type in ['rouge1', 'rouge2', 'rougeLsum']:
             for calc in ['max', 'diff', 'acc']:
