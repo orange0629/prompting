@@ -189,7 +189,7 @@ class benchmark_truthfulqa(benchmark_base):
         return metrics
 
     def eval_saved_file(self, raw_pred_file, prompt_score_file, metric_list=["bleu"]):
-        raw_pred_df = pd.read_csv(raw_pred_file)
+        raw_pred_df = pd.read_csv(raw_pred_file).fillna("none")
         prompt_score_df = pd.read_csv(prompt_score_file)
         model_name = raw_pred_file.split("/")[-1].split("_")[0]
         

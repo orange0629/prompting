@@ -11,7 +11,7 @@ triton/
 # data/benchmark/
 
 # Results
-# results/
+results/benchmark/*_truthfulqa_results.csv
 
 # Shells
 *.sh
