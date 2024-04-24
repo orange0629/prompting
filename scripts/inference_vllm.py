@@ -54,6 +54,8 @@ else:
 
 if benchmark == "truthfulqa":
     user_prompt = "{question_prompt}"
+elif benchmark == "socket":
+    user_prompt = 'For the sentence: "{question_prompt}", is it bragging about an achievement? Reply with only yes or no.'
 else:
     user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
 
