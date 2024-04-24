@@ -197,18 +197,18 @@ class benchmark_truthfulqa(benchmark_base):
         for prompt in tqdm(prompt_score_df["Prompt"]):
             if "bleu" in metric_list:
                 bleu_tmp = lib.utils.bleu_score(raw_pred_df[prompt], self.correct_answer_list, self.incorrect_answer_list)
-                metrics.get(f"{model_name}/{self.name.upper()}_BLEU_acc", []).append(bleu_tmp["BLEU_acc"])
-                metrics.get(f"{model_name}/{self.name.upper()}_BLEU_full", []).append(bleu_tmp)
+                metrics.setdefault(f"{model_name}/{self.name.upper()}_BLEU_acc", []).append(bleu_tmp["BLEU_acc"])
+                metrics.setdefault(f"{model_name}/{self.name.upper()}_BLEU_full", []).append(bleu_tmp)
             if "rouge" in metric_list:
                 rouge_tmp = lib.utils.rouge_score(raw_pred_df[prompt], self.correct_answer_list, self.incorrect_answer_list)
-                metrics.get(f"{model_name}/{self.name.upper()}_rouge1_acc", []).append(rouge_tmp["rouge1_acc"])
-                metrics.get(f"{model_name}/{self.name.upper()}_ROUGE_full", []).append(rouge_tmp)
+                metrics.setdefault(f"{model_name}/{self.name.upper()}_rouge1_acc", []).append(rouge_tmp["rouge1_acc"])
+                metrics.setdefault(f"{model_name}/{self.name.upper()}_ROUGE_full", []).append(rouge_tmp)
             if "bleurt" in metric_list:
                 if self.bleurt is None:
                     self.bleurt = load_metric("bleurt")
                 bleurt_tmp = lib.utils.bleurt_score(raw_pred_df[prompt], self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
-                metrics.get(f"{model_name}/{self.name.upper()}_BLEURT_acc", []).append(bleurt_tmp["BLEURT_acc"])
-                metrics.get(f"{model_name}/{self.name.upper()}_BLEURT_full", []).append(bleurt_tmp)
+                metrics.setdefault(f"{model_name}/{self.name.upper()}_BLEURT_acc", []).append(bleurt_tmp["BLEURT_acc"])
+                metrics.setdefault(f"{model_name}/{self.name.upper()}_BLEURT_full", []).append(bleurt_tmp)
         
         prompt_score_df = pd.read_csv(prompt_score_file)
         for key in metrics:
