@@ -52,16 +52,16 @@ else:
 #flan_template = '''{role_context} {question} Please select the correct answer number:'''
 #role_context = "You are a helpful assistant."
 
-if benchmark == "truthfulqa":
-    user_prompt = "{question_prompt}"
-elif benchmark == "socket":
-    user_prompt = 'For the sentence: "{question_prompt}", is it bragging about an achievement? Reply with only yes or no.'
-else:
-    user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
-
 metric_dict = {}
 benchmark_obj = init_benchmark(name=benchmark)
 q_list = benchmark_obj.load_question_list()
+
+if benchmark == "truthfulqa":
+    user_prompt = "{question_prompt}"
+elif "socket" in benchmark:
+    user_prompt = benchmark_obj.get_user_prompt()
+else:
+    user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
 
 for system_prompt in tqdm(system_prompts):
     if system_prompt == "empty":

@@ -225,13 +225,32 @@ class benchmark_truthfulqa(benchmark_base):
 
 
 class benchmark_socket(benchmark_base):
-    def __init__(self):
-        self.name = "socket"
-        self.task_type = 'bragging#brag_achievement'
+    def __init__(self, benchmark_name):
+        self.name = benchmark_name
+        yes_no_postfix = " Reply with only yes or no."
+        self.task_type_options = {'bragging#brag_achievement': 'For the sentence: "{question_prompt}", is it bragging about an achievement?' + yes_no_postfix, 
+                                  'hahackathon#is_humor': 'For the sentence: "{question_prompt}", is it humorous?' + yes_no_postfix, 
+                                  'tweet_irony': 'For the sentence: "{question_prompt}", is it ironic?' + yes_no_postfix, 
+                                  'sexyn': 'For the sentence: "{question_prompt}", is it sexist?' + yes_no_postfix,
+                                  'tweet_offensive': 'For the sentence: "{question_prompt}", is it offensive?' + yes_no_postfix,
+                                  'complaints': 'For the sentence: "{question_prompt}", is it a complaint?' + yes_no_postfix,
+                                  'empathy#empathy_bin': 'For the sentence: "{question_prompt}", is it expressing empathy?' + yes_no_postfix,
+                                  'stanfordpoliteness': 'For the sentence: "{question_prompt}", is it polite?' + yes_no_postfix,
+                                  'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + yes_no_postfix}
+        self.task_type = self.name[len("socket_"):]
+        assert self.task_type in self.task_type_options
         data = load_dataset('Blablablab/SOCKET',self.task_type)["sockette"]
-        self.data_df = pd.DataFrame({"text": data["text"], "label": data["label"], "task_type": self.task_type})
+        self.data_df = pd.DataFrame({"text": data["text"], "label": data["label"], "task_type": self.name})
+
+        # Some benchmark labels are reversed
+        if self.task_type in ["stanfordpoliteness"]:
+            self.data_df["label"] = [1 if label_tmp == 0 else 0 for label_tmp in list(self.data_df["label"])]
+
         self.question_list = self.data_df["text"]
         self.true_label_list = list(self.data_df["label"])
+    
+    def get_user_prompt(self):
+        return self.task_type_options[self.task_type]
 
 
     def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
@@ -253,9 +272,9 @@ class benchmark_socket(benchmark_base):
                     no_error_true_label_list.append(self.true_label_list[idx])
                     no_error_pred_label_list.append(pred_label_list[idx])
 
-            metrics = {f"{self.name.upper()}/{self.task_type}_f1": f1_score(full_true_label_list, full_pred_label_list),
-                    f"{self.name.upper()}/{self.task_type}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list),
-                    f"{self.name.upper()}/{self.task_type}_error": error_num}
+            metrics = {f"{self.name.upper()}_f1": f1_score(full_true_label_list, full_pred_label_list),
+                    f"{self.name.upper()}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list),
+                    f"{self.name.upper()}_error": error_num}
 
         return metrics
 
@@ -269,5 +288,5 @@ def init_benchmark(name="mmlu") -> benchmark_base:
         return benchmark_hellaswag()
     elif name == "truthfulqa":
         return benchmark_truthfulqa()
-    elif name == "socket":
-        return benchmark_socket()
+    elif "socket" in name:
+        return benchmark_socket(name)
