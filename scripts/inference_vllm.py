@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument("-system_prompts_dir", help="Path to system prompts", type=str, required=True)
     parser.add_argument("-cache_dir", help="Cache location", type=str, default=None)
     parser.add_argument("-multi_thread", help="Multi Thread Inference", type=int, default=1)
+    parser.add_argument("-cot", help="Chain-of-Thought Type", type=int, default=0)
     parser.add_argument('--hf', action = 'store_true', help = 'Use Huggingface Transformer', default=False)
     parser.add_argument('-saving_strategy', help="The result types to save", type=str, default="all", choices=['all','eval','raw','none'])
     return parser.parse_args()
@@ -31,6 +32,8 @@ cache_dir = args.cache_dir
 benchmark = args.benchmark.lower()
 system_prompts_dir = args.system_prompts_dir
 model_name = model_dir.split("/")[-1] if "/" in model_dir else model_dir
+if args.cot == 1:
+    model_name += "-CoT"
 model_type = "llama"
 for key in llm_template_dict:
     if key in model_name.lower():
@@ -56,12 +59,7 @@ metric_dict = {}
 benchmark_obj = init_benchmark(name=benchmark)
 q_list = benchmark_obj.load_question_list()
 
-if benchmark == "truthfulqa":
-    user_prompt = "{question_prompt}"
-elif "socket" in benchmark:
-    user_prompt = benchmark_obj.get_user_prompt()
-else:
-    user_prompt = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
+user_prompt = benchmark_obj.get_user_prompt(args=args)
 
 for system_prompt in tqdm(system_prompts):
     if system_prompt == "empty":
@@ -69,12 +67,18 @@ for system_prompt in tqdm(system_prompts):
     answer_prompts = []
     for q in q_list:
         full_prompt = llm_template_dict[model_type].format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
+        if args.cot == 1:
+            full_prompt += " Let's think step by step. "
         answer_prompts.append(full_prompt)
+    
     if benchmark == "truthfulqa":
         outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=64))
+    elif args.cot != 0:
+        outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=512))
     else:
         outputs = llm.generate(answer_prompts)
-    metric_dict_single = benchmark_obj.eval_question_list(outputs, vllm=(not args.hf), save_intermediate=(args.saving_strategy, model_name, system_prompt))
+    
+    metric_dict_single = benchmark_obj.eval_question_list(outputs, args=args, save_intermediate=(args.saving_strategy, model_name, system_prompt))
     for key in metric_dict_single:
         named_key = f"{model_name}/{key}"
         if named_key not in metric_dict:

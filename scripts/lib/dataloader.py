@@ -12,6 +12,14 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv"}
 save_intermediate_dir = "./results/benchmark"
 
+MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
+MULTIPLE_CHOICE_COT_USER_PROMPT = "The following is a multiple choice question (with answers). Think carefully step by step. Describe your reasoning in steps and then output the option letter at the very end.\n{question_prompt}"
+
+YES_NO_POSTFIX = " Reply with only yes or no."
+YES_NO_COT_POSTFIX = " Think carefully step by step. Describe your reasoning in steps and then output yes or no at the very end."
+
+QA_DEFAULT_USER_PROMPT = "{question_prompt}"
+
 letter2num = {"A": 1, "B": 2, "C": 3, "D": 4, "Z": 5}
 num2letter = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E"}
 
@@ -36,31 +44,31 @@ class benchmark_base:
         cleaned_text = re.sub(pattern, ' ', text)
         return re.sub("\s\s+" , " ", cleaned_text).strip()
 
-    def result_list_preprocessing(self, pred_text_list, vllm=True, result_type="multiple_choice"):
+    def result_list_preprocessing(self, pred_text_list, args, result_type="multiple_choice"):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
-            if vllm:
-                text = self.clean_text(pred_text.outputs[0].text)
-            else:
-                text = self.clean_text(pred_text)
+            text = self.clean_text(pred_text.outputs[0].text) if not args.hf else self.clean_text(pred_text)
             
             if result_type == "multiple_choice":
-                model_choice_tmp = "Z"
-                for c in text:
-                    if c in ["A", "B", "C", "D"]:
-                        model_choice_tmp = c
-                        break
-                if model_choice_tmp == "Z":
+                pattern = re.compile(r'[ABCD]')
+                matches = list(pattern.finditer(text))
+                if matches:
+                    if args.cot != 0:
+                        pred_label_list.append(matches[-1].group())
+                    else:
+                        pred_label_list.append(matches[0].group())
+                else:
                     pred_label_list.append(text)
                     error_num += 1
-                else:
-                    pred_label_list.append(model_choice_tmp)
             elif result_type == "yes_no":
-                if "yes" in text.lower():
-                    pred_label_list.append(1)
-                elif "no" in text.lower():
-                    pred_label_list.append(0)
+                pattern = re.compile(r'\b(yes|no)\b', re.IGNORECASE)
+                matches = list(pattern.finditer(text))
+                if matches:
+                    if args.cot != 0:
+                        pred_label_list.append(int(matches[-1].group() == "yes"))
+                    else:
+                        pred_label_list.append(int(matches[0].group() == "yes"))
                 else:
                     pred_label_list.append(text)
                     error_num += 1
@@ -72,8 +80,14 @@ class benchmark_base:
     def load_question_list(self):
         return self.question_list
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
         return dict()
+    
+    def get_user_prompt(self, args):
+        if args.cot == 1:
+            return MULTIPLE_CHOICE_COT_USER_PROMPT
+        else:
+            return MULTIPLE_CHOICE_DEFAULT_USER_PROMPT
 
 class benchmark_mmlu(benchmark_base):
     def __init__(self):
@@ -89,8 +103,8 @@ class benchmark_mmlu(benchmark_base):
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, result_type="multiple_choice")
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
@@ -119,8 +133,8 @@ class benchmark_arc(benchmark_base):
                 self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
     
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, result_type="multiple_choice")
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -147,8 +161,8 @@ class benchmark_hellaswag(benchmark_base):
             self.true_label_list[idx] = num2letter[int(self.true_label_list[idx])+1]
 
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, result_type="multiple_choice")
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -172,9 +186,12 @@ class benchmark_truthfulqa(benchmark_base):
         self.incorrect_answer_list = [lib.utils.split_multi_answer(text) for text in self.data_df["Incorrect Answers"]]
 
         self.bleurt = None
+    
+    def get_user_prompt(self, args):
+        return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, vllm, result_type="raw")
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
@@ -227,16 +244,15 @@ class benchmark_truthfulqa(benchmark_base):
 class benchmark_socket(benchmark_base):
     def __init__(self, benchmark_name):
         self.name = benchmark_name
-        yes_no_postfix = " Reply with only yes or no."
-        self.task_type_options = {'bragging#brag_achievement': 'For the sentence: "{question_prompt}", is it bragging about an achievement?' + yes_no_postfix, 
-                                  'hahackathon#is_humor': 'For the sentence: "{question_prompt}", is it humorous?' + yes_no_postfix, 
-                                  'tweet_irony': 'For the sentence: "{question_prompt}", is it ironic?' + yes_no_postfix, 
-                                  'sexyn': 'For the sentence: "{question_prompt}", is it sexist?' + yes_no_postfix,
-                                  'tweet_offensive': 'For the sentence: "{question_prompt}", is it offensive?' + yes_no_postfix,
-                                  'complaints': 'For the sentence: "{question_prompt}", is it a complaint?' + yes_no_postfix,
-                                  'empathy#empathy_bin': 'For the sentence: "{question_prompt}", is it expressing empathy?' + yes_no_postfix,
-                                  'stanfordpoliteness': 'For the sentence: "{question_prompt}", is it polite?' + yes_no_postfix,
-                                  'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + yes_no_postfix}
+        self.task_type_options = {'bragging#brag_achievement': 'For the sentence: "{question_prompt}", is it bragging about an achievement?' + YES_NO_POSTFIX, 
+                                  'hahackathon#is_humor': 'For the sentence: "{question_prompt}", is it humorous?' + YES_NO_POSTFIX, 
+                                  'tweet_irony': 'For the sentence: "{question_prompt}", is it ironic?' + YES_NO_POSTFIX, 
+                                  'sexyn': 'For the sentence: "{question_prompt}", is it sexist?' + YES_NO_POSTFIX,
+                                  'tweet_offensive': 'For the sentence: "{question_prompt}", is it offensive?' + YES_NO_POSTFIX,
+                                  'complaints': 'For the sentence: "{question_prompt}", is it a complaint?' + YES_NO_POSTFIX,
+                                  'empathy#empathy_bin': 'For the sentence: "{question_prompt}", is it expressing empathy?' + YES_NO_POSTFIX,
+                                  'stanfordpoliteness': 'For the sentence: "{question_prompt}", is it polite?' + YES_NO_POSTFIX,
+                                  'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + YES_NO_POSTFIX}
         self.task_type = self.name[len("socket_"):]
         assert self.task_type in self.task_type_options
         data = load_dataset('Blablablab/SOCKET',self.task_type)["sockette"]
@@ -249,12 +265,15 @@ class benchmark_socket(benchmark_base):
         self.question_list = self.data_df["text"]
         self.true_label_list = list(self.data_df["label"])
     
-    def get_user_prompt(self):
-        return self.task_type_options[self.task_type]
+    def get_user_prompt(self, args):
+        if args.cot == 1:
+            return self.task_type_options[self.task_type].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
+        else:
+            return self.task_type_options[self.task_type]
 
 
-    def eval_question_list(self, pred_text_list, vllm=True, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, vllm, result_type="yes_no")
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
