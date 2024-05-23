@@ -9,7 +9,8 @@ import re
 data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv", 
             "arc": "./data/benchmark/arc/ARC-Challenge-Test.csv",
             "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl",
-            "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv"}
+            "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv",
+            "hitom": "./data/benchmark/hitom/Hi-ToM_data.json"}
 save_intermediate_dir = "./results/benchmark"
 
 MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -297,6 +298,37 @@ class benchmark_socket(benchmark_base):
 
         return metrics
 
+class benchmark_hitom(benchmark_base):
+    def __init__(self):
+        self.name = "hitom"
+        self.data_df = pd.json_normalize(pd.read_json(data_dir[self.name])['data'])
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"Story:\n{item['story'].strip()}\nQuestion: {item['question']}\nChoices: {item['choices']}"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            assert len(self.true_label_list) == len(pred_label_list)
+            acc_num = 0
+            for idx in range(len(self.true_label_list)):
+                if self.true_label_list[idx].lower() in pred_label_list.lower():
+                    acc_num += 1
+            metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(self.true_label_list)}
+
+        return metrics
+
+    def get_user_prompt(self, args):
+        return "Read the following story and answer the multiple-choice question. Please provide answer without explanations.\n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims."
 
 def init_benchmark(name="mmlu") -> benchmark_base:
     if name == "mmlu":
@@ -309,3 +341,5 @@ def init_benchmark(name="mmlu") -> benchmark_base:
         return benchmark_truthfulqa()
     elif "socket" in name:
         return benchmark_socket(name)
+    elif name == "hitom":
+        return benchmark_hitom()
