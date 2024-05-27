@@ -5,14 +5,15 @@ from lib.dataloader import init_benchmark
 from lib.hfmodel import hfmodel
 import argparse
 
-llama_template = '''[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n{user_prompt}[/INST]Answer:'''
+llama2_template = '''[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n{user_prompt}[/INST]Answer:'''
+llama3_template = '''<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nAnswer:'''
 mixtral_template = '''<s> [INST] {system_prompt}\n{user_prompt} [/INST] Answer:'''
 dbrx_template = '''<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{user_prompt}<|im_end|>\n<|im_start|>assistant\nAnswer:'''
 jamba_template = '''<|startoftext|>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n{user_prompt} [/INST] Answer:'''
 qwen_template = '''<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{user_prompt}<|im_end|>\n<|im_start|>assistant\nAnswer:'''
 gemma_template = '''<bos><start_of_turn>user\n{system_prompt}\n{user_prompt}<end_of_turn>\n<start_of_turn>model\nAnswer:'''
 commandR_template = '''<BOS_TOKEN><|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{system_prompt}<|END_OF_TURN_TOKEN|><|START_OF_TURN_TOKEN|><|USER_TOKEN|>{user_prompt}<|END_OF_TURN_TOKEN|><|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>Answer:'''
-llm_template_dict = {"llama": llama_template, "mixtral": mixtral_template, "dbrx": dbrx_template, "jamba": jamba_template, "qwen": qwen_template, "gemma": gemma_template, "command-r": commandR_template}
+llm_template_dict = {"llama-2": llama2_template, "llama-3": llama3_template, "mixtral": mixtral_template, "dbrx": dbrx_template, "jamba": jamba_template, "qwen": qwen_template, "gemma": gemma_template, "command-r": commandR_template}
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Script to run predictions with a specified GPU and data file.")

@@ -3,6 +3,7 @@ import numpy as np
 import sacrebleu
 from tqdm import tqdm
 from rouge_score import rouge_scorer, scoring
+from sklearn.metrics import accuracy_score, f1_score
 from multiprocessing import Pool
 
 def split_multi_answer(ans, sep=';', close=True, add_no_comment=False):
@@ -213,3 +214,23 @@ def _rouge(refs, preds):
         aggregator.add_scores(scorer.score(ref, pred))
     result = aggregator.aggregate()
     return {type: result[type].mid.fmeasure * 100 for type in rouge_types}
+
+def custom_f1_score(true_label_list, pred_label_list, model_name=""):
+    error_num = 0
+    full_true_label_list, full_pred_label_list = [], []
+    no_error_true_label_list, no_error_pred_label_list = [], []
+    for idx in range(len(pred_label_list)):
+        if pred_label_list[idx] not in [0, 1]:
+            full_true_label_list.append(true_label_list[idx])
+            full_pred_label_list.append(0)
+            error_num += 1
+        else:
+            full_true_label_list.append(true_label_list[idx])
+            full_pred_label_list.append(pred_label_list[idx])
+            no_error_true_label_list.append(true_label_list[idx])
+            no_error_pred_label_list.append(pred_label_list[idx])
+
+    metrics = {f"{model_name}_f1": f1_score(full_true_label_list, full_pred_label_list),
+            f"{model_name}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list),
+            f"{model_name}_error": error_num}
+    return metrics

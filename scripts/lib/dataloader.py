@@ -10,7 +10,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "arc": "./data/benchmark/arc/ARC-Challenge-Test.csv",
             "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl",
             "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv",
-            "hitom": "./data/benchmark/hitom/Hi-ToM_data.json"}
+            "hitom": "./data/benchmark/hitom/Hi-ToM_data.json",
+            "edos": "./data/benchmark/edos/edos_labelled_aggregated_1000.csv"}
 save_intermediate_dir = "./results/benchmark"
 
 MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -67,9 +68,9 @@ class benchmark_base:
                 matches = list(pattern.finditer(text))
                 if matches:
                     if args.cot != 0:
-                        pred_label_list.append(int(matches[-1].group() == "yes"))
+                        pred_label_list.append(int(matches[-1].group().lower() == "yes"))
                     else:
-                        pred_label_list.append(int(matches[0].group() == "yes"))
+                        pred_label_list.append(int(matches[0].group().lower() == "yes"))
                 else:
                     pred_label_list.append(text)
                     error_num += 1
@@ -274,27 +275,13 @@ class benchmark_socket(benchmark_base):
 
 
     def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            full_true_label_list, full_pred_label_list = [], []
-            no_error_true_label_list, no_error_pred_label_list = [], []
-            for idx in range(len(pred_label_list)):
-                if pred_label_list[idx] not in [0, 1]:
-                    full_true_label_list.append(self.true_label_list[idx])
-                    full_pred_label_list.append(0)
-                else:
-                    full_true_label_list.append(self.true_label_list[idx])
-                    full_pred_label_list.append(pred_label_list[idx])
-                    no_error_true_label_list.append(self.true_label_list[idx])
-                    no_error_pred_label_list.append(pred_label_list[idx])
-
-            metrics = {f"{self.name.upper()}_f1": f1_score(full_true_label_list, full_pred_label_list),
-                    f"{self.name.upper()}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list),
-                    f"{self.name.upper()}_error": error_num}
+            metrics = lib.utils.custom_f1_score(self.true_label_list, pred_label_list, self.name.upper())
 
         return metrics
 
@@ -330,6 +317,39 @@ class benchmark_hitom(benchmark_base):
     def get_user_prompt(self, args):
         return "Read the following story and answer the multiple-choice question. Please provide answer without explanations.\n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims."
 
+
+class benchmark_edos(benchmark_base):
+    def __init__(self, benchmark_name):
+        self.name = benchmark_name
+        self.task_type_options = {'taska': {'prompt': 'For the post: "{question_prompt}", is it sexist?' + YES_NO_POSTFIX, 'col_name': 'label_sexist'}, 
+                                  'taskb': {'prompt': 'For the sentence: "{question_prompt}", is it humorous?' + YES_NO_POSTFIX, 'col_name': 'label_category'}, 
+                                  'taskc': {'prompt': 'For the sentence: "{question_prompt}", is it ironic?' + YES_NO_POSTFIX, 'col_name': 'label_vector'}}
+        self.task_type = self.name[len("edos_"):]
+        assert self.task_type in self.task_type_options
+        self.data_df = pd.read_csv(data_dir["edos"])
+
+        self.question_list = self.data_df["text"]
+        self.true_label_list = [0 if tmp == "not sexist" else 1 for tmp in list(self.data_df[self.task_type_options[self.task_type]['col_name']])]
+    
+    def get_user_prompt(self, args):
+        if args.cot == 1:
+            return self.task_type_options[self.task_type]['prompt'].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
+        else:
+            return self.task_type_options[self.task_type]['prompt']
+
+
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        if self.task_type == "taska":
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            metrics = lib.utils.custom_f1_score(self.true_label_list, pred_label_list, self.name.upper())
+
+        return metrics
+
 def init_benchmark(name="mmlu") -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu()
@@ -343,3 +363,5 @@ def init_benchmark(name="mmlu") -> benchmark_base:
         return benchmark_socket(name)
     elif name == "hitom":
         return benchmark_hitom()
+    elif "edos" in name:
+        return benchmark_edos(name)
