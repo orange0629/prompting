@@ -308,7 +308,7 @@ class benchmark_hitom(benchmark_base):
             assert len(self.true_label_list) == len(pred_label_list)
             acc_num = 0
             for idx in range(len(self.true_label_list)):
-                if self.true_label_list[idx].lower() in pred_label_list.lower():
+                if self.true_label_list[idx].lower() in pred_label_list[idx].lower():
                     acc_num += 1
             metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(self.true_label_list)}
 
