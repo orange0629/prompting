@@ -11,7 +11,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl",
             "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv",
             "hitom": "./data/benchmark/hitom/Hi-ToM_data.json",
-            "edos": "./data/benchmark/edos/edos_labelled_aggregated_1000.csv"}
+            "edos_taska": "./data/benchmark/edos/edos_labelled_aggregated_1000.csv",
+            "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",}
 save_intermediate_dir = "./results/benchmark"
 
 MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -322,14 +323,18 @@ class benchmark_edos(benchmark_base):
     def __init__(self, benchmark_name):
         self.name = benchmark_name
         self.task_type_options = {'taska': {'prompt': 'For the post: "{question_prompt}", is it sexist?' + YES_NO_POSTFIX, 'col_name': 'label_sexist'}, 
-                                  'taskb': {'prompt': 'For the sentence: "{question_prompt}", is it humorous?' + YES_NO_POSTFIX, 'col_name': 'label_category'}, 
+                                  'taskb': {'prompt': 'For the sexist post: "{question_prompt}", classify it into one of the following 4 sexism categories:\n(1) threats, plans to harm and incitement\n(2) derogation\n(3) animosity\n(4) prejudiced discussions. Reply with only the name of category.', 'col_name': 'label_category'}, 
                                   'taskc': {'prompt': 'For the sentence: "{question_prompt}", is it ironic?' + YES_NO_POSTFIX, 'col_name': 'label_vector'}}
         self.task_type = self.name[len("edos_"):]
         assert self.task_type in self.task_type_options
-        self.data_df = pd.read_csv(data_dir["edos"])
-
+        if "taska" in self.name:
+            self.data_df = pd.read_csv(data_dir["edos_taska"])
+            self.true_label_list = [0 if tmp == "not sexist" else 1 for tmp in list(self.data_df[self.task_type_options[self.task_type]['col_name']])]
+        else:
+            self.data_df = pd.read_csv(data_dir["edos_taskbc"])
+            self.true_label_list = self.data_df[self.task_type_options[self.task_type]['col_name']]
         self.question_list = self.data_df["text"]
-        self.true_label_list = [0 if tmp == "not sexist" else 1 for tmp in list(self.data_df[self.task_type_options[self.task_type]['col_name']])]
+        
     
     def get_user_prompt(self, args):
         if args.cot == 1:
@@ -341,12 +346,26 @@ class benchmark_edos(benchmark_base):
     def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
         if self.task_type == "taska":
             pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
+        elif self.task_type == "taskb":
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+        elif self.task_type == "taskc":
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            metrics = lib.utils.custom_f1_score(self.true_label_list, pred_label_list, self.name.upper())
+            if self.task_type == "taska":
+                metrics = lib.utils.custom_f1_score(self.true_label_list, pred_label_list, self.name.upper())
+            elif self.task_type == "taskb":
+                classify_options = {"threats": "1. threats, plans to harm and incitement", "derogation": "2. derogation", "animosity": "3. animosity", "prejudiced discussions": "4. prejudiced discussions"}
+                for idx in range(len(pred_label_list)):
+                    for sub_option in classify_options:
+                        if sub_option in pred_label_list[idx].lower():
+                            pred_label_list[idx] = classify_options[sub_option]
+                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(self.true_label_list, pred_label_list, average="macro")}
+            elif self.task_type == "taskc":
+                pass
 
         return metrics
 
