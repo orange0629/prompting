@@ -12,7 +12,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "truthfulqa": "./data/benchmark/truthfulqa/TruthfulQA.csv",
             "hitom": "./data/benchmark/hitom/Hi-ToM_data.json",
             "edos_taska": "./data/benchmark/edos/edos_labelled_aggregated_1000.csv",
-            "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",}
+            "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",
+            "ifeval": "./data/benchmark/ifeval/input_data.jsonl",}
 save_intermediate_dir = "./results/benchmark"
 
 MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -87,10 +88,16 @@ class benchmark_base:
         return dict()
     
     def get_user_prompt(self, args):
-        if args.cot == 1:
+        if args.cot >= 1:
             return MULTIPLE_CHOICE_COT_USER_PROMPT
         else:
             return MULTIPLE_CHOICE_DEFAULT_USER_PROMPT
+    
+    def get_max_token_len(self, args):
+        if args.cot != 0:
+            return 512
+        else:
+            return 16
 
 class benchmark_mmlu(benchmark_base):
     def __init__(self):
@@ -242,6 +249,9 @@ class benchmark_truthfulqa(benchmark_base):
         for key in metrics:
             prompt_score_df[key] = metrics[key]
         prompt_score_df.to_csv(prompt_score_file, index=False)
+    
+    def get_max_token_len(self, args):
+        return 64
 
 
 class benchmark_socket(benchmark_base):
@@ -369,6 +379,36 @@ class benchmark_edos(benchmark_base):
 
         return metrics
 
+class benchmark_ifeval(benchmark_base):
+    def __init__(self):
+        self.name = "ifeval"
+        self.data_df = pd.read_json(data_dir[self.name], lines=True)
+        #self.data_df = self.data_df[self.data_df["instruction_id_list"].apply(lambda x: "language:response_language" not in x)]
+
+        self.question_list = self.data_df["prompt"]
+        self.true_label_list = []
+    
+    def get_user_prompt(self, args):
+        return QA_DEFAULT_USER_PROMPT
+
+    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            assert len(self.data_df) == len(pred_label_list)
+            result_data_dict = dict(zip(list(self.data_df["prompt"]), pred_label_list))
+            import lib.ifeval.evaluation_main
+            metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(data_dir[self.name], result_data_dict)["acc"]}
+        
+        return metrics
+    
+    def get_max_token_len(self, args):
+        return 512
+
+
 def init_benchmark(name="mmlu") -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu()
@@ -384,3 +424,5 @@ def init_benchmark(name="mmlu") -> benchmark_base:
         return benchmark_hitom()
     elif "edos" in name:
         return benchmark_edos(name)
+    elif "ifeval" in name:
+        return benchmark_ifeval()

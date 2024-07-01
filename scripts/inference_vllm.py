@@ -71,13 +71,8 @@ for system_prompt in tqdm(system_prompts):
         if args.cot == 1:
             full_prompt += " Let's think step by step. "
         answer_prompts.append(full_prompt)
-    
-    if benchmark == "truthfulqa":
-        outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=64))
-    elif args.cot != 0:
-        outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=512))
-    else:
-        outputs = llm.generate(answer_prompts)
+
+    outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=benchmark_obj.get_max_token_len(args)))
     
     metric_dict_single = benchmark_obj.eval_question_list(outputs, args=args, save_intermediate=(args.saving_strategy, model_name, system_prompt))
     for key in metric_dict_single:
