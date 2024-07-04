@@ -28,9 +28,10 @@ letter2num = {"A": 1, "B": 2, "C": 3, "D": 4, "Z": 5}
 num2letter = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E"}
 
 class benchmark_base:
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "base"
         self.data_df, self.question_list, self.true_label_list = pd.DataFrame(), [], []
+        self.cot = cot
     
     def save_intermediate(self, pred_label_list, model_name, column_name):
         if not os.path.exists(save_intermediate_dir):
@@ -48,17 +49,17 @@ class benchmark_base:
         cleaned_text = re.sub(pattern, ' ', text)
         return re.sub("\s\s+" , " ", cleaned_text).strip()
 
-    def result_list_preprocessing(self, pred_text_list, args, result_type="multiple_choice"):
+    def result_list_preprocessing(self, pred_text_list, result_type="multiple_choice"):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
-            text = self.clean_text(pred_text.outputs[0].text) if not args.hf else self.clean_text(pred_text)
+            text = self.clean_text(pred_text)
             
             if result_type == "multiple_choice":
                 pattern = re.compile(r'[ABCD]')
                 matches = list(pattern.finditer(text))
                 if matches:
-                    if args.cot != 0:
+                    if self.cot != 0:
                         pred_label_list.append(matches[-1].group())
                     else:
                         pred_label_list.append(matches[0].group())
@@ -69,7 +70,7 @@ class benchmark_base:
                 pattern = re.compile(r'\b(yes|no)\b', re.IGNORECASE)
                 matches = list(pattern.finditer(text))
                 if matches:
-                    if args.cot != 0:
+                    if self.cot != 0:
                         pred_label_list.append(int(matches[-1].group().lower() == "yes"))
                     else:
                         pred_label_list.append(int(matches[0].group().lower() == "yes"))
@@ -84,25 +85,26 @@ class benchmark_base:
     def load_question_list(self):
         return self.question_list
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
         return dict()
     
-    def get_user_prompt(self, args):
-        if args.cot >= 1:
+    def get_user_prompt(self):
+        if self.cot >= 1:
             return MULTIPLE_CHOICE_COT_USER_PROMPT
         else:
             return MULTIPLE_CHOICE_DEFAULT_USER_PROMPT
     
-    def get_max_token_len(self, args):
-        if args.cot != 0:
+    def get_max_token_len(self):
+        if self.cot != 0:
             return 512
         else:
             return 16
 
 class benchmark_mmlu(benchmark_base):
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "mmlu"
         self.data_df = pd.read_csv(data_dir[self.name])
+        self.cot = cot
 
         self.question_list = []
         for idx, item in self.data_df.iterrows():
@@ -113,8 +115,8 @@ class benchmark_mmlu(benchmark_base):
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="multiple_choice")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
@@ -127,9 +129,10 @@ class benchmark_mmlu(benchmark_base):
         return metrics
 
 class benchmark_arc(benchmark_base):
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "arc"
         self.data_df = pd.read_csv(data_dir[self.name])
+        self.cot = cot
 
         self.question_list = []
         for idx, item in self.data_df.iterrows():
@@ -143,8 +146,8 @@ class benchmark_arc(benchmark_base):
                 self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
     
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="multiple_choice")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -157,9 +160,10 @@ class benchmark_arc(benchmark_base):
         return metrics
 
 class benchmark_hellaswag(benchmark_base):
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "hellaswag"
         self.data_df = pd.read_json(path_or_buf=data_dir[self.name], lines=True).sample(n=1000, random_state=42)
+        self.cot = cot
 
         self.question_list = []
         for idx, item in self.data_df.iterrows():
@@ -171,8 +175,8 @@ class benchmark_hellaswag(benchmark_base):
             self.true_label_list[idx] = num2letter[int(self.true_label_list[idx])+1]
 
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="multiple_choice")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -185,9 +189,10 @@ class benchmark_hellaswag(benchmark_base):
         return metrics
 
 class benchmark_truthfulqa(benchmark_base):
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "truthfulqa"
         self.data_df = pd.read_csv(data_dir[self.name])
+        self.cot = cot
 
         self.question_list = self.data_df["Question"]
         self.true_label_list = list(self.data_df["Best Answer"])
@@ -197,11 +202,11 @@ class benchmark_truthfulqa(benchmark_base):
 
         self.bleurt = None
     
-    def get_user_prompt(self, args):
+    def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
@@ -250,13 +255,14 @@ class benchmark_truthfulqa(benchmark_base):
             prompt_score_df[key] = metrics[key]
         prompt_score_df.to_csv(prompt_score_file, index=False)
     
-    def get_max_token_len(self, args):
+    def get_max_token_len(self):
         return 64
 
 
 class benchmark_socket(benchmark_base):
-    def __init__(self, benchmark_name):
+    def __init__(self, benchmark_name, cot):
         self.name = benchmark_name
+        self.cot = cot
         self.task_type_options = {'bragging#brag_achievement': 'For the sentence: "{question_prompt}", is it bragging about an achievement?' + YES_NO_POSTFIX, 
                                   'hahackathon#is_humor': 'For the sentence: "{question_prompt}", is it humorous?' + YES_NO_POSTFIX, 
                                   'tweet_irony': 'For the sentence: "{question_prompt}", is it ironic?' + YES_NO_POSTFIX, 
@@ -278,15 +284,15 @@ class benchmark_socket(benchmark_base):
         self.question_list = self.data_df["text"]
         self.true_label_list = list(self.data_df["label"])
     
-    def get_user_prompt(self, args):
-        if args.cot == 1:
+    def get_user_prompt(self):
+        if self.cot == 1:
             return self.task_type_options[self.task_type].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
         else:
             return self.task_type_options[self.task_type]
 
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -297,9 +303,10 @@ class benchmark_socket(benchmark_base):
         return metrics
 
 class benchmark_hitom(benchmark_base):
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "hitom"
         self.data_df = pd.json_normalize(pd.read_json(data_dir[self.name])['data'])
+        self.cot = cot
 
         self.question_list = []
         for idx, item in self.data_df.iterrows():
@@ -309,8 +316,8 @@ class benchmark_hitom(benchmark_base):
         self.true_label_list = list(self.data_df["answer"])
 
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -325,13 +332,14 @@ class benchmark_hitom(benchmark_base):
 
         return metrics
 
-    def get_user_prompt(self, args):
+    def get_user_prompt(self):
         return "Read the following story and answer the multiple-choice question. Please provide answer without explanations.\n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims."
 
 
 class benchmark_edos(benchmark_base):
-    def __init__(self, benchmark_name):
+    def __init__(self, benchmark_name, cot):
         self.name = benchmark_name
+        self.cot = cot
         self.task_type_options = {'taska': {'prompt': 'For the post: "{question_prompt}", is it sexist?' + YES_NO_POSTFIX, 'col_name': 'label_sexist'}, 
                                   'taskb': {'prompt': 'For the sexist post: "{question_prompt}", classify it into one of the following 4 sexism categories:\n(1) threats, plans to harm and incitement\n(2) derogation\n(3) animosity\n(4) prejudiced discussions. Reply with only the name of category.', 'col_name': 'label_category'}, 
                                   'taskc': {'prompt': 'For the sentence: "{question_prompt}", is it ironic?' + YES_NO_POSTFIX, 'col_name': 'label_vector'}}
@@ -346,20 +354,20 @@ class benchmark_edos(benchmark_base):
         self.question_list = self.data_df["text"]
         
     
-    def get_user_prompt(self, args):
-        if args.cot == 1:
+    def get_user_prompt(self):
+        if self.cot == 1:
             return self.task_type_options[self.task_type]['prompt'].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
         else:
             return self.task_type_options[self.task_type]['prompt']
 
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
         if self.task_type == "taska":
-            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="yes_no")
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
         elif self.task_type == "taskb":
-            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         elif self.task_type == "taskc":
-            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
@@ -380,19 +388,20 @@ class benchmark_edos(benchmark_base):
         return metrics
 
 class benchmark_ifeval(benchmark_base):
-    def __init__(self):
+    def __init__(self, cot):
         self.name = "ifeval"
         self.data_df = pd.read_json(data_dir[self.name], lines=True)
         #self.data_df = self.data_df[self.data_df["instruction_id_list"].apply(lambda x: "language:response_language" not in x)]
+        self.cot = cot
 
         self.question_list = self.data_df["prompt"]
         self.true_label_list = []
     
-    def get_user_prompt(self, args):
+    def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, args, save_intermediate=("all", "", "")):
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, args, result_type="raw")
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
@@ -405,24 +414,24 @@ class benchmark_ifeval(benchmark_base):
         
         return metrics
     
-    def get_max_token_len(self, args):
+    def get_max_token_len(self):
         return 512
 
 
-def init_benchmark(name="mmlu") -> benchmark_base:
+def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
-        return benchmark_mmlu()
+        return benchmark_mmlu(cot=cot)
     elif name == "arc":
-        return benchmark_arc()
+        return benchmark_arc(cot=cot)
     elif name == "hellaswag":
-        return benchmark_hellaswag()
+        return benchmark_hellaswag(cot=cot)
     elif name == "truthfulqa":
-        return benchmark_truthfulqa()
+        return benchmark_truthfulqa(cot=cot)
     elif "socket" in name:
-        return benchmark_socket(name)
+        return benchmark_socket(name, cot=cot)
     elif name == "hitom":
-        return benchmark_hitom()
+        return benchmark_hitom(cot=cot)
     elif "edos" in name:
-        return benchmark_edos(name)
+        return benchmark_edos(name, cot=cot)
     elif "ifeval" in name:
-        return benchmark_ifeval()
+        return benchmark_ifeval(cot=cot)

@@ -49,18 +49,13 @@ else:
     if model_type == "command-r":
         llm = LLM(model=model_dir, download_dir=cache_dir, tensor_parallel_size=args.multi_thread)
     else:
-        llm = LLM(model=model_dir, download_dir=cache_dir, trust_remote_code=True, tensor_parallel_size=args.multi_thread)  # Create an LLM.
-
-# Here's Mingqian's prompt
-#template = '''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n### Instruction:\n{{You will be presented with a role-playing context followed by a multiple-choice question. {role_context} Select only the option number that corresponds to the correct answer for the following question.}}\n\n### Input:\n{{{{{question}}} Provide the number of the correct option without explaining your reasoning.}} \n\n### Response:'''
-#flan_template = '''{role_context} {question} Please select the correct answer number:'''
-#role_context = "You are a helpful assistant."
+        llm = LLM(model=model_dir, download_dir=cache_dir, trust_remote_code=True, tensor_parallel_size=args.multi_thread)
 
 metric_dict = {}
-benchmark_obj = init_benchmark(name=benchmark)
+benchmark_obj = init_benchmark(name=benchmark, cot=args.cot)
 q_list = benchmark_obj.load_question_list()
 
-user_prompt = benchmark_obj.get_user_prompt(args=args)
+user_prompt = benchmark_obj.get_user_prompt()
 
 for system_prompt in tqdm(system_prompts):
     if system_prompt == "empty":
@@ -72,9 +67,11 @@ for system_prompt in tqdm(system_prompts):
             full_prompt += " Let's think step by step. "
         answer_prompts.append(full_prompt)
 
-    outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=benchmark_obj.get_max_token_len(args)))
+    outputs = llm.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=benchmark_obj.get_max_token_len()))
+    if not args.hf:
+        outputs = [output.outputs[0].text for output in outputs]
     
-    metric_dict_single = benchmark_obj.eval_question_list(outputs, args=args, save_intermediate=(args.saving_strategy, model_name, system_prompt))
+    metric_dict_single = benchmark_obj.eval_question_list(outputs, save_intermediate=(args.saving_strategy, model_name, system_prompt))
     for key in metric_dict_single:
         named_key = f"{model_name}/{key}"
         if named_key not in metric_dict:
