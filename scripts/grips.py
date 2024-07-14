@@ -6,7 +6,7 @@ import numpy as np
 import heapq
 
 prompt_corpus = pd.read_csv("./data/system_prompts/prompt_corpus.csv")
-model_obj = inference_model("meta-llama/Meta-Llama-3-8B-Instruct", use_vllm=True, cache_dir="/shared/4/models/")
+model_obj = inference_model("meta-llama/Meta-Llama-3-8B-Instruct", use_vllm=True, cache_dir="/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/")
 benchmark_obj = init_benchmark(name="arc", cot=0)
 eval_metric_name = "ARC_acc"
 full_eval_metric_name = f"{model_obj.model_name}/{eval_metric_name}"
@@ -20,7 +20,7 @@ all_prompt_heap = [(-value, key) for key, value in all_prompt_database[full_eval
 heapq.heapify(all_prompt_heap)
 
 edit_options = ['del', 'swap', 'sub', 'add']
-num_iter = 3
+num_iter = 5000
 search_span = 5
 sentence_splitter = " /// "
 
@@ -115,5 +115,5 @@ for iter_idx in tqdm(range(num_iter)):
     
 
     if iter_idx % 10 == 0:
-        print(all_prompt_heap[:5])
-        pd.DataFrame(all_prompt_database).sort_values(by=full_eval_metric_name, ascending=False).to_csv("all_prompt_database.csv", index=False)
+        print(all_prompt_heap[:5], flush=True)
+        pd.DataFrame(all_prompt_database).sort_values(by=full_eval_metric_name, ascending=False).to_csv("all_prompt_database.csv")
