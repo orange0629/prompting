@@ -273,8 +273,10 @@ def main(argv):
     print_report(outputs)
 
 
-def run_eval(input_data_dir, result_data_dict):
+def run_eval(input_data_dir, result_data_dict, eval_range=None):
   inputs = read_prompt_list(input_data_dir)
+  if eval_range is not None:
+    inputs = [inputs[i] for i in eval_range]
   prompt_to_response = result_data_dict
 
   # get instruction following results

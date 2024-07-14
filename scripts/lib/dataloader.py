@@ -1,10 +1,12 @@
 import pandas as pd
+import random
 from sklearn.metrics import accuracy_score, f1_score
 from datasets import load_metric, load_dataset
 from tqdm import tqdm
 import lib.utils
 import os
 import re
+import json
 
 data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv", 
             "arc": "./data/benchmark/arc/ARC-Challenge-Test.csv",
@@ -13,7 +15,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "hitom": "./data/benchmark/hitom/Hi-ToM_data.json",
             "edos_taska": "./data/benchmark/edos/edos_labelled_aggregated_1000.csv",
             "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",
-            "ifeval": "./data/benchmark/ifeval/input_data.jsonl",}
+            "ifeval": "./data/benchmark/ifeval/input_data.jsonl",
+            "bbh": "./data/benchmark/bbh/",}
 save_intermediate_dir = "./results/benchmark"
 
 MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -84,8 +87,12 @@ class benchmark_base:
     
     def load_question_list(self):
         return self.question_list
+    
+    def load_random_question_list(self, num_q):
+        rand_idx = random.sample(range(len(self.question_list)), num_q)
+        return [self.question_list[i] for i in rand_idx], rand_idx
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         return dict()
     
     def get_user_prompt(self):
@@ -115,15 +122,19 @@ class benchmark_mmlu(benchmark_base):
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
                     f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -146,15 +157,19 @@ class benchmark_arc(benchmark_base):
                 self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
     
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
                     f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -175,15 +190,19 @@ class benchmark_hellaswag(benchmark_base):
             self.true_label_list[idx] = num2letter[int(self.true_label_list[idx])+1]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            metrics = {f"{self.name.upper()}_acc": accuracy_score(self.true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(self.true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
                     f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -205,18 +224,22 @@ class benchmark_truthfulqa(benchmark_base):
     def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            #if self.bleurt is None:
-            #    self.bleurt = load_metric("bleurt")
-            #bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
-            bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
-            #rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+            if eval_range is None:
+                bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+                #rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+                #if self.bleurt is None:
+                #    self.bleurt = load_metric("bleurt")
+                #bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
+            else:
+                bleu_tmp = lib.utils.bleu_score(pred_label_list, [self.correct_answer_list[i] for i in eval_range], [self.incorrect_answer_list[i] for i in eval_range])
+            
 
             metrics = {#f"{self.name.upper()}_BLEURT_acc": bleurt_tmp["BLEURT_acc"],
                     f"{self.name.upper()}_BLEU_acc": bleu_tmp["BLEU_acc"],
@@ -291,14 +314,18 @@ class benchmark_socket(benchmark_base):
             return self.task_type_options[self.task_type]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            metrics = lib.utils.custom_f1_score(self.true_label_list, pred_label_list, self.name.upper())
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
 
         return metrics
 
@@ -316,19 +343,23 @@ class benchmark_hitom(benchmark_base):
         self.true_label_list = list(self.data_df["answer"])
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            assert len(self.true_label_list) == len(pred_label_list)
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            assert len(local_true_label_list) == len(pred_label_list)
             acc_num = 0
-            for idx in range(len(self.true_label_list)):
-                if self.true_label_list[idx].lower() in pred_label_list[idx].lower().replace(" ", "") or self.true_label_list[idx].lower().replace("_", " ") in pred_label_list[idx].lower():
+            for idx in range(len(local_true_label_list)):
+                if local_true_label_list[idx].lower() in pred_label_list[idx].lower().replace(" ", "") or local_true_label_list[idx].lower().replace("_", " ") in pred_label_list[idx].lower():
                     acc_num += 1
-            metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(self.true_label_list)}
+            metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(local_true_label_list)}
 
         return metrics
 
@@ -361,7 +392,7 @@ class benchmark_edos(benchmark_base):
             return self.task_type_options[self.task_type]['prompt']
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         if self.task_type == "taska":
             pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
         elif self.task_type == "taskb":
@@ -373,15 +404,19 @@ class benchmark_edos(benchmark_base):
         
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
             if self.task_type == "taska":
-                metrics = lib.utils.custom_f1_score(self.true_label_list, pred_label_list, self.name.upper())
+                metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
             elif self.task_type == "taskb":
                 classify_options = {"threats": "1. threats, plans to harm and incitement", "derogation": "2. derogation", "animosity": "3. animosity", "prejudiced discussions": "4. prejudiced discussions"}
                 for idx in range(len(pred_label_list)):
                     for sub_option in classify_options:
                         if sub_option in pred_label_list[idx].lower():
                             pred_label_list[idx] = classify_options[sub_option]
-                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(self.true_label_list, pred_label_list, average="macro")}
+                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(local_true_label_list, pred_label_list, average="macro")}
             elif self.task_type == "taskc":
                 pass
 
@@ -400,7 +435,7 @@ class benchmark_ifeval(benchmark_base):
     def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", "")):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -410,12 +445,80 @@ class benchmark_ifeval(benchmark_base):
             assert len(self.data_df) == len(pred_label_list)
             result_data_dict = dict(zip(list(self.data_df["prompt"]), pred_label_list))
             import lib.ifeval.evaluation_main
-            metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(data_dir[self.name], result_data_dict)["acc"]}
+            metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(data_dir[self.name], result_data_dict, eval_range)["acc"]}
         
         return metrics
     
     def get_max_token_len(self):
         return 512
+
+
+class benchmark_bbh(benchmark_base):
+    def __init__(self, benchmark_name, cot):
+        self.name = benchmark_name
+        self.cot = cot
+        self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}', 
+                                  'causal_judgement': 'Answer the following question about causal attribution.\nQ: {question_prompt}', 
+                                  'date_understanding': 'Infer the date from context.\nQ: {question_prompt}', 
+                                  'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns.\nQ: {question_prompt}',
+                                  'dyck_languages': 'Correctly close a Dyck-n word.\nQ: {question_prompt}',
+                                  'formal_fallacies': 'Distinguish deductively valid arguments from formal fallacies.\nQ: {question_prompt}',
+                                  'geometric_shapes': 'Name geometric shapes from their SVG paths.\nQ: {question_prompt}',
+                                  'hyperbaton': 'Order adjectives correctly in English sentences.\nQ: {question_prompt}',
+                                  'logical_deduction_five_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
+                                  'logical_deduction_seven_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
+                                  'logical_deduction_three_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
+                                  'movie_recommendation': 'Recommend movies similar to the given list of movies.\nQ: {question_prompt}',
+                                  'multistep_arithmetic_two': 'Solve multi-step arithmetic problems.\nQ: {question_prompt}',
+                                  'navigate': 'Given a series of navigation instructions, determine whether one would end up back at the starting point.\nQ: {question_prompt}',
+                                  'object_counting': 'Questions that involve enumerating objects and asking the model to count them.\nQ: {question_prompt}',
+                                  'penguins_in_a_table': 'Answer questions about a table of penguins and their attributes.\nQ: {question_prompt}',
+                                  'reasoning_about_colored_objects': 'Answer extremely simple questions about the colors of objects on a surface.\nQ: {question_prompt}',
+                                  'ruin_names': "Select the humorous edit that 'ruins' the input movie or musical artist name.\nQ: {question_prompt}",
+                                  #'salient_translation_error_detection': 'For the sentence: "{question_prompt}", is it a rumor?',
+                                  'snarks': 'Determine which of two sentences is sarcastic.\nQ: {question_prompt}',
+                                  'sports_understanding': 'Determine whether an artificially constructed sentence relating to sports is plausible or not.\nQ: {question_prompt}',
+                                  'temporal_sequences': 'Task description: Answer questions about which times certain events could have occurred.\nQ: {question_prompt}',
+                                  'tracking_shuffled_objects_five_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
+                                  'tracking_shuffled_objects_seven_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
+                                  'tracking_shuffled_objects_three_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
+                                  'web_of_lies': 'Evaluate a random boolean function expressed as a word problem.\nQ: {question_prompt}',
+                                  'word_sorting': 'Sort a list of words.\nQ: {question_prompt}',
+                                  }
+        self.task_type = self.name[len("bbh_"):]
+        assert self.task_type in self.task_type_options
+        with open(data_dir[self.name] + f"{self.task_type}.json", 'r') as file:
+            data = json.load(file)["examples"]
+        self.data_df = pd.DataFrame(data)
+
+        self.question_list = self.data_df["input"]
+        self.true_label_list = list(self.data_df["target"])
+    
+    def get_user_prompt(self):
+        if self.cot == 1:
+            return self.task_type_options[self.task_type].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
+        else:
+            return self.task_type_options[self.task_type]
+
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            assert len(local_true_label_list) == len(pred_label_list)
+            acc_num = 0
+            for idx in range(len(local_true_label_list)):
+                if local_true_label_list[idx].lower() in pred_label_list[idx].lower():
+                    acc_num += 1
+            metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(local_true_label_list)}
+        return metrics
 
 
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
@@ -435,3 +538,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_edos(name, cot=cot)
     elif "ifeval" in name:
         return benchmark_ifeval(cot=cot)
+    elif "bbh" in name:
+        return benchmark_bbh(name, cot=cot)
