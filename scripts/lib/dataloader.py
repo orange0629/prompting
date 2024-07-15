@@ -88,9 +88,12 @@ class benchmark_base:
     def load_question_list(self):
         return self.question_list
     
-    def load_random_question_list(self, num_q):
-        rand_idx = random.sample(range(len(self.question_list)), num_q)
-        return [self.question_list[i] for i in rand_idx], rand_idx
+    def load_random_question_list(self, num_q=None):
+        if num_q is None:
+            return self.question_list, None
+        else:
+            rand_idx = random.sample(range(len(self.question_list)), num_q)
+            return [self.question_list[i] for i in rand_idx], rand_idx
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         return dict()
@@ -297,7 +300,7 @@ class benchmark_socket(benchmark_base):
                                   'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + YES_NO_POSTFIX}
         self.task_type = self.name[len("socket_"):]
         assert self.task_type in self.task_type_options
-        data = load_dataset('Blablablab/SOCKET',self.task_type)["sockette"]
+        data = load_dataset('Blablablab/SOCKET',self.task_type, trust_remote_code=True)["sockette"]
         self.data_df = pd.DataFrame({"text": data["text"], "label": data["label"], "task_type": self.name})
 
         # Some benchmark labels are reversed
@@ -416,7 +419,7 @@ class benchmark_edos(benchmark_base):
                     for sub_option in classify_options:
                         if sub_option in pred_label_list[idx].lower():
                             pred_label_list[idx] = classify_options[sub_option]
-                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(local_true_label_list, pred_label_list, average="macro")}
+                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(local_true_label_list, pred_label_list, average="macro", zero_division=0.0)}
             elif self.task_type == "taskc":
                 pass
 
@@ -442,8 +445,10 @@ class benchmark_ifeval(benchmark_base):
 
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            assert len(self.data_df) == len(pred_label_list)
-            result_data_dict = dict(zip(list(self.data_df["prompt"]), pred_label_list))
+            if eval_range is None:
+                result_data_dict = dict(zip(list(self.data_df["prompt"]), pred_label_list))
+            else:
+                result_data_dict = dict(zip([self.data_df["prompt"][i] for i in eval_range], pred_label_list))
             import lib.ifeval.evaluation_main
             metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(data_dir[self.name], result_data_dict, eval_range)["acc"]}
         
@@ -487,7 +492,7 @@ class benchmark_bbh(benchmark_base):
                                   }
         self.task_type = self.name[len("bbh_"):]
         assert self.task_type in self.task_type_options
-        with open(data_dir[self.name] + f"{self.task_type}.json", 'r') as file:
+        with open(data_dir["bbh"] + f"{self.task_type}.json", 'r') as file:
             data = json.load(file)["examples"]
         self.data_df = pd.DataFrame(data)
 
@@ -519,6 +524,9 @@ class benchmark_bbh(benchmark_base):
                     acc_num += 1
             metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(local_true_label_list)}
         return metrics
+    
+    def get_max_token_len(self):
+        return 128
 
 
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
