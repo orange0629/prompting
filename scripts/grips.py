@@ -6,7 +6,9 @@ from lib.dataloader import init_benchmark
 from lib.modelloader import inference_model
 import numpy as np
 import heapq
+import wandb
 
+wandb.init(project="grips_random")
 benchmark_obj_list = [("arc", 1),
                   ("mmlu", 1),
                   ("hellaswag", 1),
@@ -54,7 +56,7 @@ for idx in range(len(benchmark_obj_list)):
     if isinstance(benchmark_obj_list[idx][0], str):
         benchmark_obj_list[idx] = (init_benchmark(name=benchmark_obj_list[idx][0], cot=0), 10)#benchmark_obj_list[idx][1])
 
-prompt_corpus = pd.read_csv("./data/system_prompts/prompt_corpus.csv")
+prompt_corpus = pd.read_csv("./data/system_prompts/prompt_corpus_small.csv")
 model_obj = inference_model("meta-llama/Meta-Llama-3-8B-Instruct", use_vllm=True, cache_dir="/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/")
 eval_metric_name = "avg_score"
 full_eval_metric_name = f"{model_obj.model_name}/{eval_metric_name}"
@@ -84,6 +86,7 @@ if 'sub' in edit_options:
 
 def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
     # Make sure the input format is correct
+    system_prompts = np.unique(system_prompts).tolist()
     if not isinstance(benchmark_obj_list, list):
         benchmark_obj_list = [benchmark_obj_list]
     for idx in range(len(benchmark_obj_list)):
@@ -99,19 +102,22 @@ def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
         benchmark_len_list.append(len(q_list))
         user_prompt = benchmark_obj.get_user_prompt()
 
+        answer_prompts = []
         for system_prompt in system_prompts:
-            answer_prompts = []
+            #answer_prompts = []
             for q in q_list:
                 full_prompt = model_obj.get_prompt_template().format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
                 if benchmark_obj.cot == 1:
                     full_prompt += " Let's think step by step. "
                 answer_prompts.append(full_prompt)
 
-            outputs = model_obj.generate(answer_prompts, max_token_len=benchmark_obj.get_max_token_len())
+        full_outputs = model_obj.generate(answer_prompts, max_token_len=benchmark_obj.get_max_token_len())
             #print(answer_prompts)
             #print(outputs)
             #print("\n\n\n")
-            
+        
+        for idx, system_prompt in enumerate(system_prompts):
+            outputs = full_outputs[(idx)*len(q_list):(idx+1)*len(q_list)]
             metric_dict_single = benchmark_obj.eval_question_list(outputs, save_intermediate=("eval", model_obj.model_name, system_prompt), eval_range=eval_range)
             
             core_metric_dict[system_prompt].append(list(metric_dict_single.values())[0])
@@ -126,7 +132,7 @@ def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
 
     metric_dict[f"{model_obj.model_name}/{eval_metric_name}"] = {}
     for system_prompt in system_prompts:
-        metric_dict[f"{model_obj.model_name}/{eval_metric_name}"][system_prompt] = sum(np.array(core_metric_dict[system_prompt]) * np.array(benchmark_len_list)) / sum(benchmark_len_list)
+        metric_dict[f"{model_obj.model_name}/{eval_metric_name}"][system_prompt] = sum(np.array(core_metric_dict[system_prompt]) * np.array(benchmark_len_list)) / np.sum(benchmark_len_list)
 
     return metric_dict
 
@@ -167,8 +173,9 @@ for iter_idx in tqdm(range(num_iter)):
             pos = np.random.randint(0, len(prompt_component_lst))
             rephrase_candidates = np.random.choice(rephrase(prompt_component_lst[pos], 10, 10), 3)
             for rephrase_candidate in rephrase_candidates:
-                prompt_component_lst[pos] = rephrase_candidate
-                candidates.append(sentence_splitter.join(prompt_component_lst))
+                if len(rephrase_candidate.replace(" ", "")) != 0:
+                    prompt_component_lst[pos] = rephrase_candidate
+                    candidates.append(sentence_splitter.join(prompt_component_lst))
     
         
     for candidate in candidates:
@@ -186,4 +193,6 @@ for iter_idx in tqdm(range(num_iter)):
 
     if iter_idx % 10 == 0:
         print(all_prompt_heap[:5], flush=True)
+        wandb.log({"best_score": max(pd.DataFrame(all_prompt_database)[full_eval_metric_name])}, step=iter_idx, commit=True)
         pd.DataFrame(all_prompt_database).sort_values(by=full_eval_metric_name, ascending=False).to_csv("all_prompt_database_new.csv")
+wandb.finish()
