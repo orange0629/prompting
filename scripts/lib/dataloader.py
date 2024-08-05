@@ -1,6 +1,7 @@
 import pandas as pd
 import random
 from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import train_test_split
 from datasets import load_metric, load_dataset
 from tqdm import tqdm
 import lib.utils
@@ -88,12 +89,26 @@ class benchmark_base:
     def load_question_list(self):
         return self.question_list
     
-    def load_random_question_list(self, num_q=None):
-        if num_q is None:
-            return self.question_list, None
-        else:
-            rand_idx = random.sample(range(len(self.question_list)), num_q)
-            return [self.question_list[i] for i in rand_idx], rand_idx
+    def load_random_question_list(self, num_q=None, split="all"):
+        train_indices, test_indices = train_test_split(list(range(len(self.question_list))), test_size=0.4, random_state=42)
+        if split == "all":
+            if num_q is None:
+                return self.question_list, None
+            else:
+                rand_idx = random.sample(range(len(self.question_list)), num_q)
+                return [self.question_list[i] for i in rand_idx], rand_idx
+        elif split == "train":
+            if num_q is None:
+                return [self.question_list[i] for i in train_indices], train_indices
+            else:
+                rand_idx = random.sample(train_indices, num_q)
+                return [self.question_list[i] for i in rand_idx], rand_idx
+        elif split == "test":
+            if num_q is None:
+                return [self.question_list[i] for i in test_indices], test_indices
+            else:
+                rand_idx = random.sample(test_indices, num_q)
+                return [self.question_list[i] for i in rand_idx], rand_idx
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
         return dict()
