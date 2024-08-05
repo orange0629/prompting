@@ -65,6 +65,7 @@ all_prompt_database = {}
 if full_eval_metric_name not in all_prompt_database:
     all_prompt_database[full_eval_metric_name] = {}
 
+prompt_component_database = {"source_prompt":{}}
 
 edit_options = ['del', 'swap', 'sub', 'add']
 num_iter = 5000
@@ -139,6 +140,14 @@ def rephrase(input_text,num_return_sequences,num_beams):
     tgt_text = para_tokenizer.batch_decode(translated, skip_special_tokens=True)
     return tgt_text
 
+def write_history(hist_dict, col_name, prompt_name, val):
+    if col_name not in hist_dict:
+        hist_dict[col_name] = {}
+    if prompt_name not in hist_dict[col_name]:
+        hist_dict[col_name][prompt_name] = []
+    hist_dict[col_name][prompt_name].append(val)
+    return None
+
 curr_prompt_list = [base_prompt]
 
 for iter_idx in tqdm(range(num_iter)):
@@ -169,6 +178,12 @@ for iter_idx in tqdm(range(num_iter)):
                     for rephrase_candidate in rephrase_candidates:
                         prompt_component_lst_new = prompt_component_lst.copy()
                         prompt_component_lst_new[pos] = rephrase_candidate
+                        
+                        source_prompt = prompt_component_lst[pos]
+                        while source_prompt in prompt_component_database["source_prompt"]:
+                            source_prompt = prompt_component_database["source_prompt"][source_prompt]
+                        prompt_component_database["source_prompt"][rephrase_candidate] = source_prompt
+
                         candidates.append(sentence_splitter.join(prompt_component_lst_new))
         
     print(len(candidates))
@@ -184,6 +199,13 @@ for iter_idx in tqdm(range(num_iter)):
             else:
                 all_prompt_database[metric_key_tmp][candidate] = [metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, "")]]
         
+        if "num_iter" not in all_prompt_database:
+            all_prompt_database["num_iter"] = {}
+        if candidate in all_prompt_database["num_iter"]:
+            all_prompt_database["num_iter"][candidate].append(iter_idx)
+        else:
+            all_prompt_database["num_iter"][candidate] = [iter_idx]
+
         candidate_results.append((metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, "")], candidate))
         assert candidate in all_prompt_database[full_eval_metric_name]
     
@@ -199,6 +221,7 @@ for iter_idx in tqdm(range(num_iter)):
 
     df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
     print(df_output.head(5), flush=True)
-    df_output.to_csv("all_prompt_database_beamsearch_1.csv")
+    df_output.to_csv("all_prompt_database_beamsearch_2.csv")
+    pd.DataFrame(prompt_component_database).to_csv("prompt_component_database_beamsearch_.csv")
 
 wandb.finish()
