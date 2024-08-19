@@ -56,6 +56,55 @@ for idx in range(len(benchmark_obj_list)):
     if isinstance(benchmark_obj_list[idx][0], str):
         benchmark_obj_list[idx] = (init_benchmark(name=benchmark_obj_list[idx][0], cot=0), 10)#benchmark_obj_list[idx][1])
 
+
+class prompt_component_manager:
+    def __init__(self, prompt_component_list=[]):
+        self.prompt_component_database = {}
+        for prompt_component in prompt_component_list:
+            self.prompt_component_database[prompt_component] = {"source_prompt": prompt_component, "scores": []}
+    
+    def add_new_component(self, new_component, source_component=None):
+        if new_component in self.prompt_component_database:
+            return
+        if source_component in self.prompt_component_database:
+            self.prompt_component_database[new_component] = {"source_prompt": self.prompt_component_database[source_component]["source_prompt"], "scores": []}
+        elif source_component is None:
+            self.prompt_component_database[new_component] = {"source_prompt": new_component, "scores": []}
+
+    
+    def add_component_scores(self, prompt_components_lst, score):
+        for prompt_component in prompt_components_lst:
+            if prompt_component not in self.prompt_component_database:
+                self.add_new_component(prompt_component)
+                print(f"Detected unregistered component: {prompt_component}", flush=True)
+            self.prompt_component_database[prompt_component]["scores"].append(score)
+    
+    def get_curr_component_ranking(self):
+        prompt_component_database_df = pd.DataFrame.from_dict(self.prompt_component_database, orient='index')
+        source_prompt_ranking = prompt_component_database_df[["source_prompt", "scores"]].groupby("source_prompt").sum().reset_index()
+
+        source_prompt_ranking["avg_scores"] = source_prompt_ranking["scores"].apply(lambda x: np.mean(x) if len(x) > 0 else 0)
+        source_prompt_ranking = source_prompt_ranking.sort_values(by='avg_scores', ascending=False)
+
+        #prompt_component_database_df["avg_scores"] = prompt_component_database_df["scores"].apply(lambda x: np.mean(x))
+        #prompt_component_database_df = prompt_component_database_df.sort_values(by='avg_scores', ascending=False)
+        return source_prompt_ranking#, prompt_component_database_df
+    
+    def ucb_choose(self, n):
+        source_prompt_ranking = self.get_curr_component_ranking()
+        counts = np.array(source_prompt_ranking["scores"].apply(lambda x: len(x)))
+        if np.sum(counts) == 0:
+            return list(source_prompt_ranking["source_prompt"])
+        source_prompt_ranking["ucbscore"] = np.array(source_prompt_ranking["avg_scores"]) + np.sqrt(2*np.log(np.sum(counts) + 1e-3) / counts)
+        source_prompt_ranking = source_prompt_ranking.sort_values(by='ucbscore', ascending=False)
+        return list(source_prompt_ranking["source_prompt"])[:n]
+    
+
+    def save_database(self, save_dir="prompt_component_databse.csv"):
+        pd.DataFrame.from_dict(self.prompt_component_database, orient='index').reset_index().rename(columns={'index': 'prompt'}).to_csv(save_dir, index=False)
+    
+
+
 prompt_corpus = pd.read_csv("./data/system_prompts/prompt_corpus_small.csv")
 model_obj = inference_model("meta-llama/Meta-Llama-3-8B-Instruct", use_vllm=True, cache_dir="/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/")
 eval_metric_name = "avg_score"
@@ -65,14 +114,16 @@ all_prompt_database = {}
 if full_eval_metric_name not in all_prompt_database:
     all_prompt_database[full_eval_metric_name] = {}
 
-prompt_component_database = {"source_prompt":{}}
+#prompt_component_database = {"source_prompt":{}}
+pcm_obj = prompt_component_manager(prompt_corpus["Prompt"])
 
 edit_options = ['del', 'swap', 'sub', 'add']
 num_iter = 5000
 beam_size = 10
 sentence_splitter = " /// "
 
-base_prompt = "You are a helpful AI assistant."
+#base_prompt = "You are a helpful AI assistant."
+base_prompt = ""
 
 if 'sub' in edit_options:
     import torch
@@ -95,7 +146,7 @@ def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
     core_metric_dict = {k:[] for k in system_prompts}
     benchmark_len_list = []
 
-    for benchmark_obj, num_q in benchmark_obj_list:
+    for benchmark_obj, num_q in tqdm(benchmark_obj_list):
         q_list, eval_range = benchmark_obj.load_random_question_list(num_q=num_q)
         benchmark_len_list.append(len(q_list))
         user_prompt = benchmark_obj.get_user_prompt()
@@ -154,10 +205,11 @@ for iter_idx in tqdm(range(num_iter)):
     candidates = []
     for curr_prompt in curr_prompt_list:
         for edit in edit_options:
-            prompt_component_lst = curr_prompt.split(sentence_splitter)
+            prompt_component_lst = curr_prompt.split(sentence_splitter) if len(curr_prompt) > 0 else []
             if edit == "add":
                 for pos in range(len(prompt_component_lst)+1):
-                    for new_component in prompt_corpus["Prompt"]:
+                    for new_component in pcm_obj.ucb_choose(60):
+                    #for new_component in prompt_corpus["Prompt"]:
                         prompt_component_lst_new = prompt_component_lst.copy()
                         prompt_component_lst_new.insert(pos, new_component)
                         candidates.append(sentence_splitter.join(prompt_component_lst_new))
@@ -176,15 +228,15 @@ for iter_idx in tqdm(range(num_iter)):
                 for pos in range(len(prompt_component_lst)):
                     rephrase_candidates = rephrase(prompt_component_lst[pos], 10, 10)
                     for rephrase_candidate in rephrase_candidates:
+                        if prompt_component_lst[pos] == rephrase_candidate:
+                            continue
                         prompt_component_lst_new = prompt_component_lst.copy()
                         prompt_component_lst_new[pos] = rephrase_candidate
-                        
-                        source_prompt = prompt_component_lst[pos]
-                        while source_prompt in prompt_component_database["source_prompt"]:
-                            source_prompt = prompt_component_database["source_prompt"][source_prompt]
-                        prompt_component_database["source_prompt"][rephrase_candidate] = source_prompt
 
+                        pcm_obj.add_new_component(rephrase_candidate, prompt_component_lst[pos])
                         candidates.append(sentence_splitter.join(prompt_component_lst_new))
+            # Deduplicate candidates
+            candidates = list(set(candidates))
         
     print(len(candidates))
     metrics_tmp = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in candidates], model_obj, benchmark_obj_list)
@@ -199,6 +251,10 @@ for iter_idx in tqdm(range(num_iter)):
             else:
                 all_prompt_database[metric_key_tmp][candidate] = [metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, "")]]
         
+        # Register score into component manager
+        pcm_obj.add_component_scores(candidate.split(sentence_splitter), metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, "")])
+
+        # Record iteration
         if "num_iter" not in all_prompt_database:
             all_prompt_database["num_iter"] = {}
         if candidate in all_prompt_database["num_iter"]:
@@ -221,7 +277,7 @@ for iter_idx in tqdm(range(num_iter)):
 
     df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
     print(df_output.head(5), flush=True)
-    df_output.to_csv("all_prompt_database_beamsearch_2.csv")
-    pd.DataFrame(prompt_component_database).to_csv("prompt_component_database_beamsearch_.csv")
+    df_output.to_csv("all_prompt_database_beamsearch_3.csv")
+    pcm_obj.save_database()
 
 wandb.finish()
