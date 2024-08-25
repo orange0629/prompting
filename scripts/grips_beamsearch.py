@@ -56,6 +56,7 @@ for idx in range(len(benchmark_obj_list)):
     if isinstance(benchmark_obj_list[idx][0], str):
         benchmark_obj_list[idx] = (init_benchmark(name=benchmark_obj_list[idx][0], cot=0), 10)#benchmark_obj_list[idx][1])
 
+benchmark_obj_list_eval = [(benchmark_obj_list[idx][0], None) for idx in range(len(benchmark_obj_list))]
 
 class prompt_component_manager:
     def __init__(self, prompt_component_list=[]):
@@ -133,7 +134,7 @@ if 'sub' in edit_options:
     para_tokenizer = PegasusTokenizer.from_pretrained(para_model_name)
     para_model = PegasusForConditionalGeneration.from_pretrained(para_model_name).to(torch_device).eval()
 
-def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
+def run_model_eval(system_prompts, model_obj, benchmark_obj_list, split="all"):
     # Make sure the input format is correct
     system_prompts = np.unique(system_prompts).tolist()
     if not isinstance(benchmark_obj_list, list):
@@ -147,7 +148,7 @@ def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
     benchmark_len_list = []
 
     for benchmark_obj, num_q in tqdm(benchmark_obj_list):
-        q_list, eval_range = benchmark_obj.load_random_question_list(num_q=num_q)
+        q_list, eval_range = benchmark_obj.load_random_question_list(num_q=num_q, split=split)
         benchmark_len_list.append(len(q_list))
         user_prompt = benchmark_obj.get_user_prompt()
 
@@ -156,14 +157,12 @@ def run_model_eval(system_prompts, model_obj, benchmark_obj_list):
             #answer_prompts = []
             for q in q_list:
                 full_prompt = model_obj.get_prompt_template().format(system_prompt=system_prompt, user_prompt=user_prompt.format(question_prompt=q))
-                if benchmark_obj.cot == 1:
-                    full_prompt += " Let's think step by step. "
                 answer_prompts.append(full_prompt)
 
-        full_outputs = model_obj.generate(answer_prompts, max_token_len=benchmark_obj.get_max_token_len())
-            #print(answer_prompts)
-            #print(outputs)
-            #print("\n\n\n")
+        full_outputs = model_obj.generate(answer_prompts, max_token_len=512)
+        #print(answer_prompts)
+        #print(full_outputs)
+        #print("\n\n\n", flush=True)
         
         for idx, system_prompt in enumerate(system_prompts):
             outputs = full_outputs[(idx)*len(q_list):(idx+1)*len(q_list)]
@@ -200,8 +199,17 @@ def write_history(hist_dict, col_name, prompt_name, val):
     return None
 
 curr_prompt_list = [base_prompt]
+# Evaluation
+eval_candidates = curr_prompt_list
+metrics_tmp_eval = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], model_obj, benchmark_obj_list_eval, split="test")
+for candidate in eval_candidates:
+    for metric_key_tmp in metrics_tmp_eval:
+        if "eval_"+metric_key_tmp not in all_prompt_database:
+            all_prompt_database["eval_"+metric_key_tmp] = {}
+        all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+wandb.log({"test_score": np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates])}, step=0, commit=True)
 
-for iter_idx in tqdm(range(num_iter)):
+for iter_idx in tqdm(range(1, num_iter)):
     candidates = []
     for curr_prompt in curr_prompt_list:
         for edit in edit_options:
@@ -239,7 +247,7 @@ for iter_idx in tqdm(range(num_iter)):
             candidates = list(set(candidates))
         
     print(len(candidates))
-    metrics_tmp = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in candidates], model_obj, benchmark_obj_list)
+    metrics_tmp = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in candidates], model_obj, benchmark_obj_list, split="train")
 
     candidate_results = []
     for candidate in candidates:
@@ -275,9 +283,19 @@ for iter_idx in tqdm(range(num_iter)):
     df_output[full_eval_metric_name] = df_output[full_eval_metric_name].apply(lambda x: np.mean(x))
     wandb.log({"best_score": max(df_output[full_eval_metric_name])}, step=iter_idx, commit=True)
 
+    # Evaluation
+    eval_candidates = [_item[1] for _item in candidate_results[:beam_size]]
+    metrics_tmp_eval = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], model_obj, benchmark_obj_list_eval, split="test")
+    for candidate in eval_candidates:
+        for metric_key_tmp in metrics_tmp_eval:
+            if "eval_"+metric_key_tmp not in all_prompt_database:
+                all_prompt_database["eval_"+metric_key_tmp] = {}
+            all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+    wandb.log({"test_score": np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates])}, step=iter_idx, commit=True)
+
     df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
     print(df_output.head(5), flush=True)
-    df_output.to_csv("all_prompt_database_beamsearch_3.csv")
-    pcm_obj.save_database()
+    df_output.to_csv("all_prompt_database_beamsearch_5.csv")
+    pcm_obj.save_database("prompt_component_databse_5.csv")
 
 wandb.finish()
