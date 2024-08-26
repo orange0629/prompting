@@ -20,13 +20,17 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "bbh": "./data/benchmark/bbh/",}
 save_intermediate_dir = "./results/benchmark"
 
-MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
+#MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
+MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = 'The following is a multiple choice question (with answers).\n{question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).'
 MULTIPLE_CHOICE_COT_USER_PROMPT = "The following is a multiple choice question (with answers). Think carefully step by step. Describe your reasoning in steps and then output the option letter at the very end.\n{question_prompt}"
 
-YES_NO_POSTFIX = " Reply with only yes or no."
+# YES_NO_POSTFIX = " Reply with only yes or no."
+#YES_NO_POSTFIX = " Show your final answer (Yes or No only) bracketed between <answer> and </answer>."
+YES_NO_POSTFIX = '\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (Yes or No only).'
 YES_NO_COT_POSTFIX = " Think carefully step by step. Describe your reasoning in steps and then output yes or no at the very end."
 
-QA_DEFAULT_USER_PROMPT = "{question_prompt}"
+#QA_DEFAULT_USER_PROMPT = "{question_prompt} Show your final answer bracketed between <answer> and </answer>."
+QA_DEFAULT_USER_PROMPT = '{question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer to the question.'
 
 letter2num = {"A": 1, "B": 2, "C": 3, "D": 4, "Z": 5}
 num2letter = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E"}
@@ -58,6 +62,13 @@ class benchmark_base:
         pred_label_list = []
         for pred_text in pred_text_list:
             text = self.clean_text(pred_text)
+
+            # Answer tag extraction
+            start = text.find("<answer>") + len("<answer>") if text.find("<answer>") != -1 else 0
+            end = text.find("</answer>") if text.find("</answer>") != -1 else len(text)
+            text = text[start:end]
+            start = text.find("Answer: ") + len("Answer: ") if text.find("Answer: ") != -1 else 0
+            text = text[start:]
             
             if result_type == "multiple_choice":
                 pattern = re.compile(r'[ABCD]')
@@ -141,6 +152,9 @@ class benchmark_mmlu(benchmark_base):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -152,7 +166,7 @@ class benchmark_mmlu(benchmark_base):
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
                     f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -176,6 +190,9 @@ class benchmark_arc(benchmark_base):
     
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -187,7 +204,7 @@ class benchmark_arc(benchmark_base):
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
                     f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -209,6 +226,9 @@ class benchmark_hellaswag(benchmark_base):
 
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -220,7 +240,7 @@ class benchmark_hellaswag(benchmark_base):
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num),
+                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
                     f"{self.name.upper()}_error": error_num}
 
         return metrics
@@ -243,6 +263,9 @@ class benchmark_truthfulqa(benchmark_base):
         return QA_DEFAULT_USER_PROMPT
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -315,7 +338,7 @@ class benchmark_socket(benchmark_base):
                                   'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + YES_NO_POSTFIX}
         self.task_type = self.name[len("socket_"):]
         assert self.task_type in self.task_type_options
-        data = load_dataset('Blablablab/SOCKET',self.task_type)["sockette"]
+        data = load_dataset('Blablablab/SOCKET',self.task_type, trust_remote_code=True)["sockette"]
         self.data_df = pd.DataFrame({"text": data["text"], "label": data["label"], "task_type": self.name})
 
         # Some benchmark labels are reversed
@@ -333,6 +356,9 @@ class benchmark_socket(benchmark_base):
 
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -362,6 +388,9 @@ class benchmark_hitom(benchmark_base):
 
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -382,7 +411,7 @@ class benchmark_hitom(benchmark_base):
         return metrics
 
     def get_user_prompt(self):
-        return "Read the following story and answer the multiple-choice question. Please provide answer without explanations.\n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims."
+        return '''Read the following story and answer the multiple-choice question. \n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims.\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).'''
 
 
 class benchmark_edos(benchmark_base):
@@ -411,6 +440,9 @@ class benchmark_edos(benchmark_base):
 
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         if self.task_type == "taska":
             pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
         elif self.task_type == "taskb":
@@ -434,7 +466,7 @@ class benchmark_edos(benchmark_base):
                     for sub_option in classify_options:
                         if sub_option in pred_label_list[idx].lower():
                             pred_label_list[idx] = classify_options[sub_option]
-                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(local_true_label_list, pred_label_list, average="macro")}
+                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(local_true_label_list, pred_label_list, average="macro", zero_division=0.0)}
             elif self.task_type == "taskc":
                 pass
 
@@ -454,14 +486,19 @@ class benchmark_ifeval(benchmark_base):
         return QA_DEFAULT_USER_PROMPT
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
 
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
-            assert len(self.data_df) == len(pred_label_list)
-            result_data_dict = dict(zip(list(self.data_df["prompt"]), pred_label_list))
+            if eval_range is None:
+                result_data_dict = dict(zip(list(self.data_df["prompt"]), pred_label_list))
+            else:
+                result_data_dict = dict(zip([self.data_df["prompt"][i] for i in eval_range], pred_label_list))
             import lib.ifeval.evaluation_main
             metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(data_dir[self.name], result_data_dict, eval_range)["acc"]}
         
@@ -475,37 +512,93 @@ class benchmark_bbh(benchmark_base):
     def __init__(self, benchmark_name, cot):
         self.name = benchmark_name
         self.cot = cot
-        self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}', 
-                                  'causal_judgement': 'Answer the following question about causal attribution.\nQ: {question_prompt}', 
-                                  'date_understanding': 'Infer the date from context.\nQ: {question_prompt}', 
-                                  'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns.\nQ: {question_prompt}',
-                                  'dyck_languages': 'Correctly close a Dyck-n word.\nQ: {question_prompt}',
-                                  'formal_fallacies': 'Distinguish deductively valid arguments from formal fallacies.\nQ: {question_prompt}',
-                                  'geometric_shapes': 'Name geometric shapes from their SVG paths.\nQ: {question_prompt}',
-                                  'hyperbaton': 'Order adjectives correctly in English sentences.\nQ: {question_prompt}',
-                                  'logical_deduction_five_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
-                                  'logical_deduction_seven_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
-                                  'logical_deduction_three_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
-                                  'movie_recommendation': 'Recommend movies similar to the given list of movies.\nQ: {question_prompt}',
-                                  'multistep_arithmetic_two': 'Solve multi-step arithmetic problems.\nQ: {question_prompt}',
-                                  'navigate': 'Given a series of navigation instructions, determine whether one would end up back at the starting point.\nQ: {question_prompt}',
-                                  'object_counting': 'Questions that involve enumerating objects and asking the model to count them.\nQ: {question_prompt}',
-                                  'penguins_in_a_table': 'Answer questions about a table of penguins and their attributes.\nQ: {question_prompt}',
-                                  'reasoning_about_colored_objects': 'Answer extremely simple questions about the colors of objects on a surface.\nQ: {question_prompt}',
-                                  'ruin_names': "Select the humorous edit that 'ruins' the input movie or musical artist name.\nQ: {question_prompt}",
+        # self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}', 
+        #                           'causal_judgement': 'Answer the following question about causal attribution.\nQ: {question_prompt}', 
+        #                           'date_understanding': 'Infer the date from context.\nQ: {question_prompt}', 
+        #                           'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns.\nQ: {question_prompt}',
+        #                           'dyck_languages': 'Correctly close a Dyck-n word.\nQ: {question_prompt}',
+        #                           'formal_fallacies': 'Distinguish deductively valid arguments from formal fallacies.\nQ: {question_prompt}',
+        #                           'geometric_shapes': 'Name geometric shapes from their SVG paths.\nQ: {question_prompt}',
+        #                           'hyperbaton': 'Order adjectives correctly in English sentences.\nQ: {question_prompt}',
+        #                           'logical_deduction_five_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
+        #                           'logical_deduction_seven_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
+        #                           'logical_deduction_three_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}',
+        #                           'movie_recommendation': 'Recommend movies similar to the given list of movies.\nQ: {question_prompt}',
+        #                           'multistep_arithmetic_two': 'Solve multi-step arithmetic problems.\nQ: {question_prompt}',
+        #                           'navigate': 'Given a series of navigation instructions, determine whether one would end up back at the starting point.\nQ: {question_prompt}',
+        #                           'object_counting': 'Questions that involve enumerating objects and asking the model to count them.\nQ: {question_prompt}',
+        #                           'penguins_in_a_table': 'Answer questions about a table of penguins and their attributes.\nQ: {question_prompt}',
+        #                           'reasoning_about_colored_objects': 'Answer extremely simple questions about the colors of objects on a surface.\nQ: {question_prompt}',
+        #                           'ruin_names': "Select the humorous edit that 'ruins' the input movie or musical artist name.\nQ: {question_prompt}",
+        #                           #'salient_translation_error_detection': 'For the sentence: "{question_prompt}", is it a rumor?',
+        #                           'snarks': 'Determine which of two sentences is sarcastic.\nQ: {question_prompt}',
+        #                           'sports_understanding': 'Determine whether an artificially constructed sentence relating to sports is plausible or not.\nQ: {question_prompt}',
+        #                           'temporal_sequences': 'Task description: Answer questions about which times certain events could have occurred.\nQ: {question_prompt}',
+        #                           'tracking_shuffled_objects_five_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
+        #                           'tracking_shuffled_objects_seven_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
+        #                           'tracking_shuffled_objects_three_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
+        #                           'web_of_lies': 'Evaluate a random boolean function expressed as a word problem.\nQ: {question_prompt}',
+        #                           'word_sorting': 'Sort a list of words.\nQ: {question_prompt}',
+        #                           }
+        # self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression. Show your final answer (True or False only) bracketed between <answer> and </answer>.\nQ: {question_prompt}', 
+        #                           'causal_judgement': 'Answer the following question about causal attribution. How would a typical person answer each of the following questions about causation? Show your final answer (Yes or No only) bracketed between <answer> and </answer>.\nQ: {question_prompt}', 
+        #                           'date_understanding': 'Infer the date from context. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}', 
+        #                           'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'dyck_languages': 'Correctly close a Dyck-n word. Show your final answer bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'formal_fallacies': 'Distinguish deductively valid arguments from formal fallacies. Be cautious, some arguments may have premises that are nonsensical or contradictory. In such cases, simply focus on determining whether or not the conclusion is supported by the premises, regardless of their content.\nRead each argument and provided premises carefully and attentively. If the argument can be demonstrated to be invalid based on the premises, respond with "invalid," otherwise, answer "valid." Show your final answer (valid or invalid only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           'geometric_shapes': 'Name geometric shapes from their SVG paths. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'hyperbaton': 'Order adjectives correctly in English sentences. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'logical_deduction_five_objects': 'A logical deduction task which requires deducing the order of a sequence of objects. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'logical_deduction_seven_objects': 'A logical deduction task which requires deducing the order of a sequence of objects. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'logical_deduction_three_objects': 'A logical deduction task which requires deducing the order of a sequence of objects. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'movie_recommendation': "Recommend movies similar to the given list of movies. Let's think step by step. First, let's identify the common themes or genres of the given movies. Then, let's look at the options and choose the one that best fits the common themes or genres. If none of the options fit the common themes or genres perfectly, let's choose the option that is most similar to the given movies in terms of its popularity and well-knownness. Finally, let's bracket the final answer option between <answer> and </answer>.Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}",
+        #                           'multistep_arithmetic_two': 'Solve the following math problems by following the steps in the order of operations:\n\n1. When multiplying or dividing two negative numbers, the result will be positive.\n2. When multiplying or dividing a positive and a negative number, the result will be negative.\n3. When adding or subtracting a negative number, it is the same as adding or subtracting its positive counterpart. Show your final answer (a number only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           'navigate': 'Given a set of instructions, determine whether following those instructions will take you back to the exact same spot you started from. Keep in mind any movements, including turns and the direction of any steps. For example, if you take 2 steps forward and then 2 steps backward, you will end up in the same spot. Determine your answer by saying "yes" or "no". Show your final answer (Yes or No only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           'object_counting': 'Questions that involve enumerating objects and asking the model to count them. Show your final answer (a number only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           'penguins_in_a_table': 'Answer questions about a table of penguins and their attributes. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'reasoning_about_colored_objects': 'Answer extremely simple questions about the colors of objects on a surface. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'ruin_names': "Select the humorous edit that 'ruins' the input movie or musical artist name. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}",
+        #                           #'salient_translation_error_detection': 'For the sentence: "{question_prompt}", is it a rumor?',
+        #                           'snarks': 'Determine which of two sentences is sarcastic. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'sports_understanding': 'Determine whether an artificially constructed sentence relating to sports is plausible or not. Show your final answer (yes or no only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           'temporal_sequences': 'Answer questions about which times certain events could have occurred. To solve this problem, we can break it down into smaller steps. The first step is to find the time when the person woke up. Once we have that information, we can then proceed to the next step, which is to identify the earliest time slot that has not been accounted for. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'tracking_shuffled_objects_five_objects': "A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps. Let's approach this task in a systematic manner. First, let's identify all the different objects that are being swapped in the context. Then, let's trace the swaps and keep track of the objects as they change hands. Finally, let's use our understanding of the swaps and the initial positions of the objects to answer the question. We also need to make sure that all the information necessary to answer the question is contained in the context and check that the number of players is the same as the number of objects. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}",
+        #                           'tracking_shuffled_objects_seven_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'tracking_shuffled_objects_three_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps. We will methodically address this by breaking it down into manageable portions. We will monitor the final status of every entity (e.g., Alice, Bob, and Claire) after the transactions noted in the problem. We will also monitor the flow of the transactions. Show your final answer option bracketed between <answer> and </answer> at the end.\nQ: {question_prompt}',
+        #                           'web_of_lies': 'Evaluate a random boolean function expressed as a word problem. Show your final answer (Yes or No only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           'word_sorting': 'Sort a list of words. Show your final answer (only words seperated by whitespace) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
+        #                           }
+        self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (True or False only).', 
+                                  'causal_judgement': 'Answer the following question about causal attribution. How would a typical person answer each of the following questions about causation?\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (Yes or No only).', 
+                                  'date_understanding': 'Infer the date from context.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).', 
+                                  'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'dyck_languages': 'Correctly close a Dyck-n word.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer to the question',
+                                  'formal_fallacies': 'Distinguish deductively valid arguments from formal fallacies. Be cautious, some arguments may have premises that are nonsensical or contradictory. In such cases, simply focus on determining whether or not the conclusion is supported by the premises, regardless of their content.\nRead each argument and provided premises carefully and attentively. If the argument can be demonstrated to be invalid based on the premises, respond with "invalid," otherwise, answer "valid."\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (valid or invalid only).',
+                                  'geometric_shapes': 'Name geometric shapes from their SVG paths.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'hyperbaton': 'Order adjectives correctly in English sentences.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'logical_deduction_five_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'logical_deduction_seven_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'logical_deduction_three_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'movie_recommendation': '''Recommend movies similar to the given list of movies. Let's think step by step. First, let's identify the common themes or genres of the given movies. Then, let's look at the options and choose the one that best fits the common themes or genres. If none of the options fit the common themes or genres perfectly, let's choose the option that is most similar to the given movies in terms of its popularity and well-knownness. Finally, let's print the final answer option after "Answer:".\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).''',
+                                  'multistep_arithmetic_two': 'Solve the following math problems by following the steps in the order of operations:\n\n1. When multiplying or dividing two negative numbers, the result will be positive.\n2. When multiplying or dividing a positive and a negative number, the result will be negative.\n3. When adding or subtracting a negative number, it is the same as adding or subtracting its positive counterpart.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (a number only).',
+                                  'navigate': 'Given a set of instructions, determine whether following those instructions will take you back to the exact same spot you started from. Keep in mind any movements, including turns and the direction of any steps. For example, if you take 2 steps forward and then 2 steps backward, you will end up in the same spot. Determine your answer by saying "yes" or "no".\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (Yes or No only).',
+                                  'object_counting': 'Questions that involve enumerating objects and asking the model to count them.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (a number only).',
+                                  'penguins_in_a_table': 'Answer questions about a table of penguins and their attributes.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer to the question',
+                                  'reasoning_about_colored_objects': 'Answer extremely simple questions about the colors of objects on a surface.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'ruin_names': '''Select the humorous edit that 'ruins' the input movie or musical artist name.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).''',
                                   #'salient_translation_error_detection': 'For the sentence: "{question_prompt}", is it a rumor?',
-                                  'snarks': 'Determine which of two sentences is sarcastic.\nQ: {question_prompt}',
-                                  'sports_understanding': 'Determine whether an artificially constructed sentence relating to sports is plausible or not.\nQ: {question_prompt}',
-                                  'temporal_sequences': 'Task description: Answer questions about which times certain events could have occurred.\nQ: {question_prompt}',
-                                  'tracking_shuffled_objects_five_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
-                                  'tracking_shuffled_objects_seven_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
-                                  'tracking_shuffled_objects_three_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps.\nQ: {question_prompt}',
-                                  'web_of_lies': 'Evaluate a random boolean function expressed as a word problem.\nQ: {question_prompt}',
-                                  'word_sorting': 'Sort a list of words.\nQ: {question_prompt}',
+                                  'snarks': 'Determine which of two sentences is sarcastic.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'sports_understanding': 'Determine whether an artificially constructed sentence relating to sports is plausible or not.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (yes or no only).',
+                                  'temporal_sequences': 'Answer questions about which times certain events could have occurred. To solve this problem, we can break it down into smaller steps. The first step is to find the time when the person woke up. Once we have that information, we can then proceed to the next step, which is to identify the earliest time slot that has not been accounted for.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'tracking_shuffled_objects_five_objects': '''A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps. Let's approach this task in a systematic manner. First, let's identify all the different objects that are being swapped in the context. Then, let's trace the swaps and keep track of the objects as they change hands. Finally, let's use our understanding of the swaps and the initial positions of the objects to answer the question. We also need to make sure that all the information necessary to answer the question is contained in the context and check that the number of players is the same as the number of objects.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).''',
+                                  'tracking_shuffled_objects_seven_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps. \nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'tracking_shuffled_objects_three_objects': 'A task requiring determining the final positions of a set of objects given their initial positions and a description of a sequence of swaps. We will methodically address this by breaking it down into manageable portions. We will monitor the final status of every entity (e.g., Alice, Bob, and Claire) after the transactions noted in the problem. We will also monitor the flow of the transactions.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'web_of_lies': 'Evaluate a random boolean function expressed as a word problem.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (Yes or No only).',
+                                  'word_sorting': 'Sort a list of words. \nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (only words seperated by whitespace).',
                                   }
         self.task_type = self.name[len("bbh_"):]
         assert self.task_type in self.task_type_options
-        with open(data_dir[self.name] + f"{self.task_type}.json", 'r') as file:
+        with open(data_dir["bbh"] + f"{self.task_type}.json", 'r') as file:
             data = json.load(file)["examples"]
         self.data_df = pd.DataFrame(data)
 
@@ -520,6 +613,9 @@ class benchmark_bbh(benchmark_base):
 
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2])
+
         pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2])
@@ -533,10 +629,16 @@ class benchmark_bbh(benchmark_base):
             assert len(local_true_label_list) == len(pred_label_list)
             acc_num = 0
             for idx in range(len(local_true_label_list)):
-                if local_true_label_list[idx].lower() in pred_label_list[idx].lower():
+                if len(local_true_label_list[idx]) == 1: # Multiple Choice
+                    if local_true_label_list[idx] in pred_label_list[idx]:
+                        acc_num += 1
+                elif local_true_label_list[idx].lower() in pred_label_list[idx].lower():
                     acc_num += 1
             metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(local_true_label_list)}
         return metrics
+    
+    def get_max_token_len(self):
+        return 128
 
 
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
