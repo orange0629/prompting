@@ -222,7 +222,7 @@ for iter_idx in tqdm(range(1, num_iter)):
         df_output = pd.DataFrame(all_prompt_database)
         df_output[full_eval_metric_name+"_raw"] = df_output[full_eval_metric_name]
         df_output[full_eval_metric_name] = df_output[full_eval_metric_name].apply(lambda x: np.mean(x))
-        wandb.log({"best_score": max(df_output[full_eval_metric_name])}, step=iter_idx, commit=True)
+        wandb.log({"best_score": max(df_output[full_eval_metric_name])}, step=iter_idx, commit=False)
         df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
         print(df_output.head(5), flush=True)
         df_output.to_csv("all_prompt_database_grips_random_3.csv")
