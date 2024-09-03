@@ -7,12 +7,14 @@ import numpy as np
 import wandb
 import multiprocessing
 
+MODEL_FULL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct"
+MODEL_NAME = MODEL_FULL_NAME.split("/")[-1]
 #multiprocessing.set_start_method("spawn", force=True)
 
 def worker(gpu_id, task_queue, result_queue):
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
     from lib.modelloader import inference_model
-    model_obj = inference_model("meta-llama/Meta-Llama-3-8B-Instruct", use_vllm=True, cache_dir="/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/")
+    model_obj = inference_model(MODEL_FULL_NAME, use_vllm=True, cache_dir="/scratch/qdj_project_owned_root/qdj_project_owned3/shared_data/models/")
     result_queue.put((gpu_id, "success"))
     while True:
         task = task_queue.get()
@@ -75,7 +77,7 @@ def main():
     wandb.init(project="grips_beamsearch")
 
     # Multigpu settings
-    GPU_IDX_LIST = [0,1,2]
+    GPU_IDX_LIST = [0,1,2,3]
     task_queue = multiprocessing.Queue()
     result_queue = multiprocessing.Queue()
     workers = []
@@ -140,7 +142,7 @@ def main():
     prompt_corpus = pd.read_csv("./data/system_prompts/prompt_corpus_small.csv")
 
     eval_metric_name = "avg_score"
-    full_eval_metric_name = f"Meta-Llama-3-8B-Instruct/{eval_metric_name}"
+    full_eval_metric_name = f"{MODEL_NAME}/{eval_metric_name}"
 
     all_prompt_database = {}
     if full_eval_metric_name not in all_prompt_database:
@@ -165,7 +167,7 @@ def main():
         para_tokenizer = PegasusTokenizer.from_pretrained(para_model_name)
         para_model = PegasusForConditionalGeneration.from_pretrained(para_model_name).to(torch_device).eval()
 
-    def run_model_eval_multigpu(system_prompts, task_queue, result_queue, benchmark_obj_list, split="all"):
+    def run_model_eval_multigpu(system_prompts, task_queue, result_queue, benchmark_obj_list, split="all", saving_strategy="eval"):
         # Make sure the input format is correct
         system_prompts = np.unique(system_prompts).tolist()
         if not isinstance(benchmark_obj_list, list):
@@ -206,8 +208,8 @@ def main():
             
             for idx, system_prompt in enumerate(system_prompts):
                 outputs = full_outputs[(idx)*len(q_list):(idx+1)*len(q_list)]
-                model_name = "Meta-Llama-3-8B-Instruct"
-                metric_dict_single = benchmark_obj.eval_question_list(outputs, save_intermediate=("eval", model_name, system_prompt), eval_range=eval_range)
+                model_name = MODEL_NAME
+                metric_dict_single = benchmark_obj.eval_question_list(outputs, save_intermediate=(saving_strategy, model_name, system_prompt), eval_range=eval_range)
                 
                 core_metric_dict[system_prompt].append(list(metric_dict_single.values())[0])
                 for key, value in metric_dict_single.items():
@@ -326,19 +328,23 @@ def main():
 
         # Evaluation
         eval_candidates = [_item[1] for _item in candidate_results[:beam_size]]
-        metrics_tmp_eval = run_model_eval_multigpu([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], task_queue, result_queue, benchmark_obj_list_eval, split="test")
+        metrics_tmp_eval = run_model_eval_multigpu([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], task_queue, result_queue, benchmark_obj_list_eval, split="test", saving_strategy="all")
         for candidate in eval_candidates:
             for metric_key_tmp in metrics_tmp_eval:
                 if "eval_"+metric_key_tmp not in all_prompt_database:
                     all_prompt_database["eval_"+metric_key_tmp] = {}
                 all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+            
+            # Record iteration
+            all_prompt_database.setdefault("eval_num_iter", {}).setdefault(candidate, []).append(iter_idx)
+        
         print(np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates]), flush=True)
         wandb.log({"test_score": np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates])}, step=iter_idx, commit=True)
 
         df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
         print(df_output.head(5), flush=True)
-        df_output.to_csv("all_prompt_database_beamsearch_6.csv")
-        pcm_obj.save_database("prompt_component_databse_6.csv")
+        df_output.to_csv("all_prompt_database_beamsearch_llama3_1.csv")
+        pcm_obj.save_database("prompt_component_databse_llama3_1.csv")
 
     wandb.finish()
     for _ in workers:

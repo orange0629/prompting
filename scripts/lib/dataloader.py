@@ -215,7 +215,7 @@ class benchmark_arc(benchmark_base):
 class benchmark_hellaswag(benchmark_base):
     def __init__(self, cot):
         self.name = "hellaswag"
-        self.data_df = pd.read_json(path_or_buf=data_dir[self.name], lines=True).sample(n=1000, random_state=42)
+        self.data_df = pd.read_json(path_or_buf=data_dir[self.name], lines=True).sample(n=1000, random_state=42).reset_index(drop=True)
         self.cot = cot
 
         self.question_list = []
