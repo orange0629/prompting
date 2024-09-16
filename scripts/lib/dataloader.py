@@ -9,6 +9,7 @@ import os
 import re
 import json
 
+project_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv", 
             "arc": "./data/benchmark/arc/ARC-Challenge-Test.csv",
             "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl",
@@ -18,7 +19,7 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",
             "ifeval": "./data/benchmark/ifeval/input_data.jsonl",
             "bbh": "./data/benchmark/bbh/",}
-save_intermediate_dir = "./results/benchmark"
+save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
 #MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
 MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = 'The following is a multiple choice question (with answers).\n{question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).'
@@ -70,7 +71,7 @@ class benchmark_base:
             start = text.find("<answer>") + len("<answer>") if text.find("<answer>") != -1 else 0
             end = text.find("</answer>") if text.find("</answer>") != -1 else len(text)
             text = text[start:end]
-            start = text.find("Answer:") + len("Answer:") if text.find("Answer:") != -1 else -5 #Only tolerate 5 chars
+            start = text.rfind("Answer:") + len("Answer:") if text.rfind("Answer:") != -1 else -5 #Only tolerate 5 chars
             text = text[start:]
             
             if result_type == "multiple_choice":
@@ -124,7 +125,7 @@ class benchmark_base:
                 rand_idx = random.sample(test_indices, num_q)
                 return [self.question_list[i] for i in rand_idx], rand_idx
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         return dict()
     
     def get_user_prompt(self):
@@ -142,7 +143,7 @@ class benchmark_base:
 class benchmark_mmlu(benchmark_base):
     def __init__(self, cot):
         self.name = "mmlu"
-        self.data_df = pd.read_csv(data_dir[self.name])
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
         self.cot = cot
 
         self.question_list = []
@@ -154,7 +155,7 @@ class benchmark_mmlu(benchmark_base):
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -172,12 +173,15 @@ class benchmark_mmlu(benchmark_base):
                     f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
                     f"{self.name.upper()}_error": error_num}
 
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
         return metrics
 
 class benchmark_arc(benchmark_base):
     def __init__(self, cot):
         self.name = "arc"
-        self.data_df = pd.read_csv(data_dir[self.name])
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
         self.cot = cot
 
         self.question_list = []
@@ -192,7 +196,7 @@ class benchmark_arc(benchmark_base):
                 self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
     
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -210,12 +214,15 @@ class benchmark_arc(benchmark_base):
                     f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
                     f"{self.name.upper()}_error": error_num}
 
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
         return metrics
 
 class benchmark_hellaswag(benchmark_base):
     def __init__(self, cot):
         self.name = "hellaswag"
-        self.data_df = pd.read_json(path_or_buf=data_dir[self.name], lines=True).sample(n=1000, random_state=42).reset_index(drop=True)
+        self.data_df = pd.read_json(path_or_buf=os.path.join(project_root_dir, data_dir[self.name]), lines=True).sample(n=1000, random_state=42).reset_index(drop=True)
         self.cot = cot
 
         self.question_list = []
@@ -228,7 +235,7 @@ class benchmark_hellaswag(benchmark_base):
             self.true_label_list[idx] = num2letter[int(self.true_label_list[idx])+1]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -245,13 +252,16 @@ class benchmark_hellaswag(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
                     f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
                     f"{self.name.upper()}_error": error_num}
+            
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
 class benchmark_truthfulqa(benchmark_base):
     def __init__(self, cot):
         self.name = "truthfulqa"
-        self.data_df = pd.read_csv(data_dir[self.name])
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
         self.cot = cot
 
         self.question_list = self.data_df["Question"]
@@ -265,7 +275,7 @@ class benchmark_truthfulqa(benchmark_base):
     def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -276,13 +286,13 @@ class benchmark_truthfulqa(benchmark_base):
         metrics = {}
         if save_intermediate[0] in ["all", "eval"]:
             if eval_range is None:
-                bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
+                bleu_tmp = lib.utils.bleu_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, return_error_idx)
                 #rouge_tmp = lib.utils.rouge_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list)
                 #if self.bleurt is None:
                 #    self.bleurt = load_metric("bleurt")
                 #bleurt_tmp = lib.utils.bleurt_score(pred_label_list, self.correct_answer_list, self.incorrect_answer_list, self.bleurt)
             else:
-                bleu_tmp = lib.utils.bleu_score(pred_label_list, [self.correct_answer_list[i] for i in eval_range], [self.incorrect_answer_list[i] for i in eval_range])
+                bleu_tmp = lib.utils.bleu_score(pred_label_list, [self.correct_answer_list[i] for i in eval_range], [self.incorrect_answer_list[i] for i in eval_range], return_error_idx)
             
 
             metrics = {#f"{self.name.upper()}_BLEURT_acc": bleurt_tmp["BLEURT_acc"],
@@ -292,6 +302,9 @@ class benchmark_truthfulqa(benchmark_base):
                     f"{self.name.upper()}_BLEU_full": bleu_tmp,
                     #f"{self.name.upper()}_ROUGE_full": rouge_tmp,
                     }
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = bleu_tmp["BLEU_error_idx"]
 
         return metrics
 
@@ -358,7 +371,7 @@ class benchmark_socket(benchmark_base):
             return self.task_type_options[self.task_type]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -374,12 +387,15 @@ class benchmark_socket(benchmark_base):
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
 
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
         return metrics
 
 class benchmark_hitom(benchmark_base):
     def __init__(self, cot):
         self.name = "hitom"
-        self.data_df = pd.json_normalize(pd.read_json(data_dir[self.name])['data'])
+        self.data_df = pd.json_normalize(pd.read_json(os.path.join(project_root_dir, data_dir[self.name]))['data'])
         self.cot = cot
 
         self.question_list = []
@@ -390,7 +406,7 @@ class benchmark_hitom(benchmark_base):
         self.true_label_list = list(self.data_df["answer"])
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -405,16 +421,19 @@ class benchmark_hitom(benchmark_base):
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             assert len(local_true_label_list) == len(pred_label_list)
-            acc_num = 0
+            error_idx = []
             for idx in range(len(local_true_label_list)):
-                if local_true_label_list[idx].lower() in pred_label_list[idx].lower().replace(" ", "") or local_true_label_list[idx].lower().replace("_", " ") in pred_label_list[idx].lower():
-                    acc_num += 1
-            metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(local_true_label_list)}
+                if not (local_true_label_list[idx].lower() in pred_label_list[idx].lower().replace(" ", "") or local_true_label_list[idx].lower().replace("_", " ") in pred_label_list[idx].lower()):
+                    error_idx.append(idx)
+            metrics = {f"{self.name.upper()}_acc_no_error": 1 - len(error_idx)/len(local_true_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = error_idx
 
         return metrics
 
     def get_user_prompt(self):
-        return '''Read the following story and answer the multiple-choice question. \n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims.\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).'''
+        return '''Read the following story and answer the multiple-choice question. \n{question_prompt}\n\nNote: You should assume the following. (1) An agent witnesses everything and every movements before exiting a location. (2) An agent A can infer another agent B's mental state only if A and B have been in the same location, or have private or public interactions. (3) Note that every agent tend to lie. What a character tells others doesn't affect his actual belief. An agent tend to trust a agent that exited the room later than himself. The exit order is known to all agents. (4) Agents in private communications know that others won't hear them, but they know that anyone can hear any public claims.\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option content only).'''
 
 
 class benchmark_edos(benchmark_base):
@@ -427,10 +446,10 @@ class benchmark_edos(benchmark_base):
         self.task_type = self.name[len("edos_"):]
         assert self.task_type in self.task_type_options
         if "taska" in self.name:
-            self.data_df = pd.read_csv(data_dir["edos_taska"])
+            self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir["edos_taska"]))
             self.true_label_list = [0 if tmp == "not sexist" else 1 for tmp in list(self.data_df[self.task_type_options[self.task_type]['col_name']])]
         else:
-            self.data_df = pd.read_csv(data_dir["edos_taskbc"])
+            self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir["edos_taskbc"]))
             self.true_label_list = self.data_df[self.task_type_options[self.task_type]['col_name']]
         self.question_list = self.data_df["text"]
         
@@ -442,7 +461,7 @@ class benchmark_edos(benchmark_base):
             return self.task_type_options[self.task_type]['prompt']
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -463,6 +482,8 @@ class benchmark_edos(benchmark_base):
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             if self.task_type == "taska":
                 metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
+                if return_error_idx:
+                    metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
             elif self.task_type == "taskb":
                 classify_options = {"threats": "1. threats, plans to harm and incitement", "derogation": "2. derogation", "animosity": "3. animosity", "prejudiced discussions": "4. prejudiced discussions"}
                 for idx in range(len(pred_label_list)):
@@ -478,7 +499,7 @@ class benchmark_edos(benchmark_base):
 class benchmark_ifeval(benchmark_base):
     def __init__(self, cot):
         self.name = "ifeval"
-        self.data_df = pd.read_json(data_dir[self.name], lines=True)
+        self.data_df = pd.read_json(os.path.join(project_root_dir, data_dir[self.name]), lines=True)
         #self.data_df = self.data_df[self.data_df["instruction_id_list"].apply(lambda x: "language:response_language" not in x)]
         self.cot = cot
 
@@ -488,7 +509,7 @@ class benchmark_ifeval(benchmark_base):
     def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -503,7 +524,7 @@ class benchmark_ifeval(benchmark_base):
             else:
                 result_data_dict = dict(zip([self.data_df["prompt"][i] for i in eval_range], pred_label_list))
             import lib.ifeval.evaluation_main
-            metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(data_dir[self.name], result_data_dict, eval_range)["acc"]}
+            metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(os.path.join(project_root_dir, data_dir[self.name]), result_data_dict, eval_range)["acc"]}
         
         return metrics
     
@@ -543,13 +564,13 @@ class benchmark_bbh(benchmark_base):
         #                           'web_of_lies': 'Evaluate a random boolean function expressed as a word problem. Show your final answer (Yes or No only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
         #                           'word_sorting': 'Sort a list of words. Show your final answer (only words seperated by whitespace) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
         #                           }
-        self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (True or False only).', 
+        self.task_type_options = {#'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (True or False only).', 
                                   'causal_judgement': 'Answer the following question about causal attribution.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (Yes or No only).', 
                                   'date_understanding': 'Infer the date from context.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).', 
                                   'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
                                   'dyck_languages': 'Correctly close a Dyck-n word.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer to the question',
                                   'formal_fallacies': 'Distinguish deductively valid arguments from formal fallacies.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (valid or invalid only).',
-                                  'geometric_shapes': 'Name geometric shapes from their SVG paths.Q: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
+                                  'geometric_shapes': 'Name geometric shapes from their SVG paths.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
                                   'hyperbaton': 'Order adjectives correctly in English sentences.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
                                   'logical_deduction_five_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
                                   'logical_deduction_seven_objects': 'A logical deduction task which requires deducing the order of a sequence of objects.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
@@ -601,7 +622,7 @@ class benchmark_bbh(benchmark_base):
         #                           }
         self.task_type = self.name[len("bbh_"):]
         assert self.task_type in self.task_type_options
-        with open(data_dir["bbh"] + f"{self.task_type}.json", 'r') as file:
+        with open(os.path.join(project_root_dir, data_dir["bbh"]) + f"{self.task_type}.json", 'r') as file:
             data = json.load(file)["examples"]
         self.data_df = pd.DataFrame(data)
 
@@ -615,7 +636,7 @@ class benchmark_bbh(benchmark_base):
             return self.task_type_options[self.task_type]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
         # Save raw prediction
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -631,6 +652,7 @@ class benchmark_bbh(benchmark_base):
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             assert len(local_true_label_list) == len(pred_label_list)
             acc_num = 0
+            correct_idx = []
             for idx in range(len(local_true_label_list)):
                 # If it's multiple choice
                 pattern_A = r'^\([A-Z]\)$'
@@ -640,12 +662,19 @@ class benchmark_bbh(benchmark_base):
                     match_B = re.search(pattern_B, pred_label_list[idx], re.MULTILINE)
                     if match_B:
                         if letter_A == match_B.group(0):
-                            acc_num += 1
+                            correct_idx.append(idx)
                 else:
-                    pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
+                    # If true answer start with special character
+                    if bool(re.match(r'^\W', local_true_label_list[idx])):
+                        pattern = r'(?<!\w)' + re.escape(local_true_label_list[idx]) + r'(?!\S)'
+                    else:
+                        pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
                     if re.search(pattern, pred_label_list[idx], re.IGNORECASE | re.MULTILINE):
-                        acc_num += 1
-            metrics = {f"{self.name.upper()}_acc_no_error": acc_num/len(local_true_label_list)}
+                        correct_idx.append(idx)
+            metrics = {f"{self.name.upper()}_acc_no_error": len(correct_idx)/len(local_true_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
     
     def get_max_token_len(self):

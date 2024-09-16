@@ -53,9 +53,9 @@ class inference_model:
                                                         #quantization_config=quantization_config
                                                         )
     
-    def generate(self, answer_prompts, max_token_len):
+    def generate(self, answer_prompts, max_token_len, use_tqdm=False):
         if self.use_vllm:
-            outputs = self.model.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=max_token_len, temperature=0), use_tqdm=False)
+            outputs = self.model.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=max_token_len, temperature=0), use_tqdm=use_tqdm)
             outputs = [output.outputs[0].text for output in outputs]
         else:
             outputs = []

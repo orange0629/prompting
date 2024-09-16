@@ -96,7 +96,7 @@ def bleurt_score_parallel(prediction, ref_true, ref_false, bleurt):
     
     return res_metric
 
-def bleu_score(prediction, ref_true, ref_false):
+def bleu_score(prediction, ref_true, ref_false, return_error_idx=False):
     assert len(prediction) == len(ref_true) == len(ref_false)
     res_metric = {}
     pool = Pool(os.cpu_count())
@@ -121,8 +121,13 @@ def bleu_score(prediction, ref_true, ref_false):
             elif calc == 'acc':
                 res_metric[col_name].append(int(bleu_correct > bleu_incorrect))
     
+    error_idx = [i for i, value in enumerate(res_metric['BLEU_acc']) if value == 0]
+    
     for key in res_metric:
         res_metric[key] = np.mean(res_metric[key])
+
+    if return_error_idx:
+        res_metric["BLEU_error_idx"] = error_idx
     
     return res_metric
 
