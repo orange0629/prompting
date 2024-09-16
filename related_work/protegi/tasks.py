@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts')))
+from lib.dataloader import init_benchmark
+
 import requests
 import json
 import concurrent.futures
@@ -127,3 +132,45 @@ class DefaultHFBinaryTask(BinaryClassificationTask):
             row = json.loads(row.strip())
             exs.append({'id': f'test-{i}', 'label': row['label'], 'text': row['text']})
         return exs
+
+
+def process_example_vllm(ex_lst, predictor, prompt):
+    pred = predictor.inference(ex, prompt)
+    return ex, pred
+
+
+class CustomTask(DataProcessor):
+    def __init__(self, benchmark_name):
+        self.benchmark_obj = init_benchmark(benchmark_name)
+
+    def evaluate(self, predictor, prompt, test_exs, n=100):
+        preds = predictor.inference(test_exs[:n], prompt)
+        #score, texts, labels, preds = process_example_vllm(test_exs[:n], predictor, prompt)
+        texts = [ex['text'] for ex in test_exs[:n]]
+        labels = [ex['label'] for ex in test_exs[:n]]
+        test_idx = [ex['id'] for ex in test_exs[:n]]
+        metric = self.benchmark_obj.eval_question_list(preds, ("eval", "", ""), test_idx, return_error_idx=True)
+        score = metric[list(metric.keys())[0]]
+        error_idx = metric[list(metric.keys())[-1]]
+
+        return score, texts, labels, preds, error_idx
+    
+    def get_train_examples(self):
+        qlist, idx_list = self.benchmark_obj.load_random_question_list(num_q=None, split="train")
+        label_full = self.benchmark_obj.true_label_list
+        exs = []
+        for idx in range(len(qlist)):
+            exs.append({"id": idx_list[idx], "text": qlist[idx], "label": label_full[idx_list[idx]]})
+        return exs
+    
+    def get_test_examples(self):
+        qlist, idx_list = self.benchmark_obj.load_random_question_list(num_q=None, split="test")
+        label_full = self.benchmark_obj.true_label_list
+        exs = []
+        for idx in range(len(qlist)):
+            exs.append({"id": idx_list[idx], "text": qlist[idx], "label": label_full[idx_list[idx]]})
+        return exs
+    
+    def stringify_prediction(self, pred):
+        return str(pred)
+    

@@ -1,3 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../scripts')))
+from lib.modelloader import inference_model
+
+
 from abc import ABC, abstractmethod
 from typing import List, Dict, Callable
 from liquid import Template
@@ -23,3 +29,15 @@ class BinaryPredictor(GPT4Predictor):
             temperature=self.opt['temperature'])[0]
         pred = 1 if response.strip().upper().startswith('YES') else 0
         return pred
+    
+
+class VLLMPredictor(GPT4Predictor):
+    def __init__(self, model_dir):
+        self.model_obj = inference_model(model_dir=model_dir, cache_dir="/shared/4/models/")
+
+    def inference(self, ex_lst, prompt):
+        # user_prompt=Template(prompt).render(text=ex['text'])
+        prompt_lst = [self.model_obj.get_prompt_template().format(system_prompt="", user_prompt=str(prompt).format(question_prompt=ex['text'])) for ex in ex_lst]
+        response = self.model_obj.generate(prompt_lst, max_token_len=512, use_tqdm=True)
+        print(response[:5])
+        return response

@@ -100,3 +100,18 @@ class CachedLogLikelihoodScorer:
             return [np.mean(cached_scores[prompt]) for prompt in prompts]
         else:
             raise Exception('Unk agg: '+ agg)
+
+
+
+class CustomScorer:
+
+    def __init__(self):
+        self.cache = {}
+
+    def __call__(self, predictor, prompts, data, task, agg='mean', max_threads=1):
+        scores = []
+        for prompt in prompts:
+            score, texts, labels, preds, error_idxs = task.evaluate(predictor, prompt, data)
+            scores.append(score)
+
+        return scores

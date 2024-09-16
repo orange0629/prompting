@@ -225,7 +225,7 @@ rounds=40, num_prompts_per_round=10, c=2.0, samples_per_eval=5, max_threads=1, v
 
         while True:
             try:
-                scores = scorer(predictor, prompts, eval_exs, max_threads=max_threads)
+                scores = scorer(predictor, prompts, eval_exs, task, max_threads=max_threads)
                 break
             except (concurrent.futures.process.BrokenProcessPool, requests.exceptions.SSLError, urllib3.exceptions.MaxRetryError):
                 pass
