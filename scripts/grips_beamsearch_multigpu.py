@@ -6,9 +6,11 @@ from lib.dataloader import init_benchmark
 import numpy as np
 import wandb
 import multiprocessing
+import json
 
 MODEL_FULL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct"
 MODEL_NAME = MODEL_FULL_NAME.split("/")[-1]
+RUNNING_ID = "20240917"
 #multiprocessing.set_start_method("spawn", force=True)
 
 def worker(gpu_id, task_queue, result_queue):
@@ -147,6 +149,7 @@ def main():
     all_prompt_database = {}
     if full_eval_metric_name not in all_prompt_database:
         all_prompt_database[full_eval_metric_name] = {}
+    edit_history = []
 
     #prompt_component_database = {"source_prompt":{}}
     pcm_obj = prompt_component_manager(prompt_corpus["Prompt"])
@@ -244,16 +247,17 @@ def main():
     curr_prompt_list = [base_prompt]
     # Evaluation
     eval_candidates = curr_prompt_list
-    metrics_tmp_eval = run_model_eval_multigpu([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], task_queue, result_queue, benchmark_obj_list_eval, split="test")
+    metrics_tmp_eval = run_model_eval_multigpu([candidate.replace(sentence_splitter, " ") for candidate in eval_candidates], task_queue, result_queue, benchmark_obj_list_eval, split="test")
     for candidate in eval_candidates:
         for metric_key_tmp in metrics_tmp_eval:
             if "eval_"+metric_key_tmp not in all_prompt_database:
                 all_prompt_database["eval_"+metric_key_tmp] = {}
-            all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+            all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, " ")]
     wandb.log({"test_score": np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates])}, step=0, commit=True)
 
     for iter_idx in tqdm(range(1, num_iter)):
         candidates = []
+        edit_history_this_iter = []
         for curr_prompt in curr_prompt_list:
             for edit in edit_options:
                 prompt_component_lst = curr_prompt.split(sentence_splitter) if len(curr_prompt) > 0 else []
@@ -264,17 +268,29 @@ def main():
                             prompt_component_lst_new = prompt_component_lst.copy()
                             prompt_component_lst_new.insert(pos, new_component)
                             candidates.append(sentence_splitter.join(prompt_component_lst_new))
+                            edit_history_this_iter.append({"target_prompt": sentence_splitter.join(prompt_component_lst_new), 
+                                                           "source_prompt": curr_prompt,
+                                                           "edit_type": edit,
+                                                           "edit_para": new_component})
                 elif edit == "del":
                     for pos in range(len(prompt_component_lst)):
                         prompt_component_lst_new = prompt_component_lst.copy()
                         prompt_component_lst_new.pop(pos)
                         candidates.append(sentence_splitter.join(prompt_component_lst_new))
+                        edit_history_this_iter.append({"target_prompt": sentence_splitter.join(prompt_component_lst_new), 
+                                                        "source_prompt": curr_prompt,
+                                                        "edit_type": edit,
+                                                        "edit_para": prompt_component_lst[pos]})
                 elif edit == "swap":
                     for pos1 in range(len(prompt_component_lst)-1):
                         for pos2 in range(pos1+1, len(prompt_component_lst)):
                             prompt_component_lst_new = prompt_component_lst.copy()
                             prompt_component_lst_new[pos1], prompt_component_lst_new[pos2] = prompt_component_lst_new[pos2], prompt_component_lst_new[pos1]
                             candidates.append(sentence_splitter.join(prompt_component_lst_new))
+                            edit_history_this_iter.append({"target_prompt": sentence_splitter.join(prompt_component_lst_new), 
+                                                           "source_prompt": curr_prompt,
+                                                           "edit_type": edit,
+                                                           "edit_para": (pos1, pos2)})
                 elif edit == "sub":
                     for pos in range(len(prompt_component_lst)):
                         rephrase_candidates = rephrase(prompt_component_lst[pos], 10, 10)
@@ -286,11 +302,15 @@ def main():
 
                             pcm_obj.add_new_component(rephrase_candidate, prompt_component_lst[pos])
                             candidates.append(sentence_splitter.join(prompt_component_lst_new))
+                            edit_history_this_iter.append({"target_prompt": sentence_splitter.join(prompt_component_lst_new), 
+                                                           "source_prompt": curr_prompt,
+                                                           "edit_type": edit,
+                                                           "edit_para": (prompt_component_lst[pos], rephrase_candidate)})
                 # Deduplicate candidates
                 candidates = list(set(candidates))
             
         print(len(candidates))
-        metrics_tmp = run_model_eval_multigpu([candidate.replace(sentence_splitter, "") for candidate in candidates], task_queue, result_queue, benchmark_obj_list, split="train")
+        metrics_tmp = run_model_eval_multigpu([candidate.replace(sentence_splitter, " ") for candidate in candidates], task_queue, result_queue, benchmark_obj_list, split="train")
 
         candidate_results = []
         for candidate in candidates:
@@ -298,12 +318,12 @@ def main():
                 if metric_key_tmp not in all_prompt_database:
                     all_prompt_database[metric_key_tmp] = {}
                 if candidate in all_prompt_database[metric_key_tmp]:
-                    all_prompt_database[metric_key_tmp][candidate].append(metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, "")])
+                    all_prompt_database[metric_key_tmp][candidate].append(metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, " ")])
                 else:
-                    all_prompt_database[metric_key_tmp][candidate] = [metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, "")]]
+                    all_prompt_database[metric_key_tmp][candidate] = [metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, " ")]]
             
             # Register score into component manager
-            pcm_obj.add_component_scores(candidate.split(sentence_splitter), metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, "")])
+            pcm_obj.add_component_scores(candidate.split(sentence_splitter), metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, " ")])
 
             # Record iteration
             if "num_iter" not in all_prompt_database:
@@ -313,9 +333,20 @@ def main():
             else:
                 all_prompt_database["num_iter"][candidate] = [iter_idx]
 
-            candidate_results.append((metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, "")], candidate))
+            candidate_results.append((metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, " ")], candidate))
             assert candidate in all_prompt_database[full_eval_metric_name]
         
+        # Store history
+        for history_item in edit_history_this_iter:
+            history_item["target_prompt_score"] = metrics_tmp[full_eval_metric_name][history_item["target_prompt"].replace(sentence_splitter, " ")]
+            try:
+                history_item["source_prompt_score"] = all_prompt_database[full_eval_metric_name][history_item["source_prompt"].replace(sentence_splitter, " ")][-1]
+            except:
+                history_item["source_prompt_score"] = None
+        edit_history.append(edit_history_this_iter)
+        with open(f'edit_history_{MODEL_NAME}_{RUNNING_ID}.json', 'w') as f:
+            json.dump(edit_history, f)
+
         candidate_results.sort(reverse=True)
         print(candidate_results[:beam_size])
         curr_prompt_list = [tmp_item[1] for tmp_item in candidate_results[:beam_size]]
@@ -328,12 +359,12 @@ def main():
 
         # Evaluation
         eval_candidates = [_item[1] for _item in candidate_results[:beam_size]]
-        metrics_tmp_eval = run_model_eval_multigpu([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], task_queue, result_queue, benchmark_obj_list_eval, split="test", saving_strategy="all")
+        metrics_tmp_eval = run_model_eval_multigpu([candidate.replace(sentence_splitter, " ") for candidate in eval_candidates], task_queue, result_queue, benchmark_obj_list_eval, split="test", saving_strategy="all")
         for candidate in eval_candidates:
             for metric_key_tmp in metrics_tmp_eval:
                 if "eval_"+metric_key_tmp not in all_prompt_database:
                     all_prompt_database["eval_"+metric_key_tmp] = {}
-                all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+                all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, " ")]
             
             # Record iteration
             all_prompt_database.setdefault("eval_num_iter", {}).setdefault(candidate, []).append(iter_idx)
@@ -343,8 +374,8 @@ def main():
 
         df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
         print(df_output.head(5), flush=True)
-        df_output.to_csv("all_prompt_database_beamsearch_llama3_1.csv")
-        pcm_obj.save_database("prompt_component_databse_llama3_1.csv")
+        df_output.to_csv("all_prompt_database_beamsearch_{MODEL_NAME}_{RUNNING_ID}.csv")
+        pcm_obj.save_database("prompt_component_database_{MODEL_NAME}_{RUNNING_ID}.csv")
 
     wandb.finish()
     for _ in workers:

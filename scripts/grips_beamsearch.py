@@ -201,12 +201,12 @@ def write_history(hist_dict, col_name, prompt_name, val):
 curr_prompt_list = [base_prompt]
 # Evaluation
 eval_candidates = curr_prompt_list
-metrics_tmp_eval = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], model_obj, benchmark_obj_list_eval, split="test")
+metrics_tmp_eval = run_model_eval([candidate.replace(sentence_splitter, " ") for candidate in eval_candidates], model_obj, benchmark_obj_list_eval, split="test")
 for candidate in eval_candidates:
     for metric_key_tmp in metrics_tmp_eval:
         if "eval_"+metric_key_tmp not in all_prompt_database:
             all_prompt_database["eval_"+metric_key_tmp] = {}
-        all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+        all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, " ")]
 wandb.log({"test_score": np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates])}, step=0, commit=True)
 
 for iter_idx in tqdm(range(1, num_iter)):
@@ -247,7 +247,7 @@ for iter_idx in tqdm(range(1, num_iter)):
             candidates = list(set(candidates))
         
     print(len(candidates))
-    metrics_tmp = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in candidates], model_obj, benchmark_obj_list, split="train")
+    metrics_tmp = run_model_eval([candidate.replace(sentence_splitter, " ") for candidate in candidates], model_obj, benchmark_obj_list, split="train")
 
     candidate_results = []
     for candidate in candidates:
@@ -255,12 +255,12 @@ for iter_idx in tqdm(range(1, num_iter)):
             if metric_key_tmp not in all_prompt_database:
                 all_prompt_database[metric_key_tmp] = {}
             if candidate in all_prompt_database[metric_key_tmp]:
-                all_prompt_database[metric_key_tmp][candidate].append(metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, "")])
+                all_prompt_database[metric_key_tmp][candidate].append(metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, " ")])
             else:
-                all_prompt_database[metric_key_tmp][candidate] = [metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, "")]]
+                all_prompt_database[metric_key_tmp][candidate] = [metrics_tmp[metric_key_tmp][candidate.replace(sentence_splitter, " ")]]
         
         # Register score into component manager
-        pcm_obj.add_component_scores(candidate.split(sentence_splitter), metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, "")])
+        pcm_obj.add_component_scores(candidate.split(sentence_splitter), metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, " ")])
 
         # Record iteration
         if "num_iter" not in all_prompt_database:
@@ -270,7 +270,7 @@ for iter_idx in tqdm(range(1, num_iter)):
         else:
             all_prompt_database["num_iter"][candidate] = [iter_idx]
 
-        candidate_results.append((metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, "")], candidate))
+        candidate_results.append((metrics_tmp[full_eval_metric_name][candidate.replace(sentence_splitter, " ")], candidate))
         assert candidate in all_prompt_database[full_eval_metric_name]
     
     candidate_results.sort(reverse=True)
@@ -285,12 +285,12 @@ for iter_idx in tqdm(range(1, num_iter)):
 
     # Evaluation
     eval_candidates = [_item[1] for _item in candidate_results[:beam_size]]
-    metrics_tmp_eval = run_model_eval([candidate.replace(sentence_splitter, "") for candidate in eval_candidates], model_obj, benchmark_obj_list_eval, split="test")
+    metrics_tmp_eval = run_model_eval([candidate.replace(sentence_splitter, " ") for candidate in eval_candidates], model_obj, benchmark_obj_list_eval, split="test")
     for candidate in eval_candidates:
         for metric_key_tmp in metrics_tmp_eval:
             if "eval_"+metric_key_tmp not in all_prompt_database:
                 all_prompt_database["eval_"+metric_key_tmp] = {}
-            all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, "")]
+            all_prompt_database["eval_"+metric_key_tmp][candidate] = metrics_tmp_eval[metric_key_tmp][candidate.replace(sentence_splitter, " ")]
     wandb.log({"test_score": np.mean([all_prompt_database["eval_"+full_eval_metric_name][candidate] for candidate in eval_candidates])}, step=iter_idx, commit=True)
 
     df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
