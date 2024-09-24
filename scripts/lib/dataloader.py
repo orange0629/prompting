@@ -18,7 +18,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "edos_taska": "./data/benchmark/edos/edos_labelled_aggregated_1000.csv",
             "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",
             "ifeval": "./data/benchmark/ifeval/input_data.jsonl",
-            "bbh": "./data/benchmark/bbh/",}
+            "bbh": "./data/benchmark/bbh/",
+            "brainteaser": "./data/benchmark/brainteaser_semantic-reconstruction.csv"}
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
 #MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -564,7 +565,7 @@ class benchmark_bbh(benchmark_base):
         #                           'web_of_lies': 'Evaluate a random boolean function expressed as a word problem. Show your final answer (Yes or No only) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
         #                           'word_sorting': 'Sort a list of words. Show your final answer (only words seperated by whitespace) bracketed between <answer> and </answer>.\nQ: {question_prompt}',
         #                           }
-        self.task_type_options = {#'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (True or False only).', 
+        self.task_type_options = {'boolean_expressions': 'Evaluate the result of the following Boolean expression.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (True or False only).', 
                                   'causal_judgement': 'Answer the following question about causal attribution.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (Yes or No only).', 
                                   'date_understanding': 'Infer the date from context.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).', 
                                   'disambiguation_qa': 'Clarify the meaning of sentences with ambiguous pronouns.\nQ: {question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).',
@@ -681,6 +682,43 @@ class benchmark_bbh(benchmark_base):
         return 512
 
 
+class benchmark_brainteaser(benchmark_base):
+    def __init__(self, cot):
+        self.name = "brainteaser"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"{item['question'].strip()}\nA. {item['option1']}\nB. {item['option2']}\nC. {item['option3']}\nD. {item['option4']}\n"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu(cot=cot)
@@ -700,3 +738,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_ifeval(cot=cot)
     elif "bbh" in name:
         return benchmark_bbh(name, cot=cot)
+    elif "brainteaser" in name:
+        return benchmark_brainteaser(cot=cot)

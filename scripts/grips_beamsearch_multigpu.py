@@ -8,7 +8,7 @@ import wandb
 import multiprocessing
 import json
 
-MODEL_FULL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct"
+MODEL_FULL_NAME = "mistralai/Mistral-Nemo-Instruct-2407"
 MODEL_NAME = MODEL_FULL_NAME.split("/")[-1]
 RUNNING_ID = "20240917"
 #multiprocessing.set_start_method("spawn", force=True)
@@ -374,8 +374,8 @@ def main():
 
         df_output = df_output.sort_values(by=full_eval_metric_name, ascending=False)
         print(df_output.head(5), flush=True)
-        df_output.to_csv("all_prompt_database_beamsearch_{MODEL_NAME}_{RUNNING_ID}.csv")
-        pcm_obj.save_database("prompt_component_database_{MODEL_NAME}_{RUNNING_ID}.csv")
+        df_output.to_csv(f"all_prompt_database_beamsearch_{MODEL_NAME}_{RUNNING_ID}.csv")
+        pcm_obj.save_database(f"prompt_component_database_{MODEL_NAME}_{RUNNING_ID}.csv")
 
     wandb.finish()
     for _ in workers:
