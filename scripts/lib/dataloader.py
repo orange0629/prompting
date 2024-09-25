@@ -19,7 +19,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "edos_taskbc": "./data/benchmark/edos/edos_labelled_sexist.csv",
             "ifeval": "./data/benchmark/ifeval/input_data.jsonl",
             "bbh": "./data/benchmark/bbh/",
-            "brainteaser": "./data/benchmark/brainteaser_semantic-reconstruction.csv"}
+            "brainteaser": "./data/benchmark/brainteaser/brainteaser_semantic-reconstruction.csv",
+            "gsm8k": "./data/benchmark/gsm8k/gsm8k_test.csv",}
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
 #MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -352,7 +353,10 @@ class benchmark_socket(benchmark_base):
                                   'complaints': 'For the sentence: "{question_prompt}", is it a complaint?' + YES_NO_POSTFIX,
                                   'empathy#empathy_bin': 'For the sentence: "{question_prompt}", is it expressing empathy?' + YES_NO_POSTFIX,
                                   'stanfordpoliteness': 'For the sentence: "{question_prompt}", is it polite?' + YES_NO_POSTFIX,
-                                  'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + YES_NO_POSTFIX}
+                                  'rumor#rumor_bool': 'For the sentence: "{question_prompt}", is it a rumor?' + YES_NO_POSTFIX,
+                                  'empathy#distress_bin': 'For the sentence: "{question_prompt}", is it showing distress?' + YES_NO_POSTFIX, # Newly added
+                                  "jigsaw#insult":  'For the sentence: "{question_prompt}", is it an insult?' + YES_NO_POSTFIX,
+                                  }
         self.task_type = self.name[len("socket_"):]
         assert self.task_type in self.task_type_options
         data = load_dataset('Blablablab/SOCKET',self.task_type, trust_remote_code=True)["sockette"]
@@ -629,12 +633,6 @@ class benchmark_bbh(benchmark_base):
 
         self.question_list = self.data_df["input"]
         self.true_label_list = list(self.data_df["target"])
-    
-    def get_user_prompt(self):
-        if self.cot == 1:
-            return self.task_type_options[self.task_type].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
-        else:
-            return self.task_type_options[self.task_type]
 
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
@@ -652,7 +650,6 @@ class benchmark_bbh(benchmark_base):
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             assert len(local_true_label_list) == len(pred_label_list)
-            acc_num = 0
             correct_idx = []
             for idx in range(len(local_true_label_list)):
                 # If it's multiple choice
@@ -719,6 +716,47 @@ class benchmark_brainteaser(benchmark_base):
         return metrics
 
 
+class benchmark_gsm8k(benchmark_base):
+    def __init__(self, cot):
+        self.name = "gsm8k"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = list(self.data_df["question"])
+        
+        self.true_label_list = list(self.data_df["answer"].apply(lambda x: str(x)))
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            assert len(local_true_label_list) == len(pred_label_list)
+            correct_idx = []
+            for idx in range(len(local_true_label_list)):
+                # If true answer start with special character
+                if bool(re.match(r'^\W', local_true_label_list[idx])):
+                    pattern = r'(?<!\w)' + re.escape(local_true_label_list[idx]) + r'(?!\S)'
+                else:
+                    pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
+                if re.search(pattern, pred_label_list[idx], re.IGNORECASE | re.MULTILINE):
+                    correct_idx.append(idx)
+            metrics = {f"{self.name.upper()}_acc_no_error": len(correct_idx)/len(local_true_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+        return metrics
+
+
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu(cot=cot)
@@ -740,3 +778,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_bbh(name, cot=cot)
     elif "brainteaser" in name:
         return benchmark_brainteaser(cot=cot)
+    elif "gsm8k" in name:
+        return benchmark_gsm8k(cot=cot)
