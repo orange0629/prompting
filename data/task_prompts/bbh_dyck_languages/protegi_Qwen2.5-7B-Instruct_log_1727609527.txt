@@ -1,0 +1,6 @@
+{"task": "bbh_dyck_languages", "model_dir": "Qwen/Qwen2.5-7B-Instruct", "prompts": "/home/leczhang/research/prompting/./data/task_prompts/bbh_dyck_languages/./base.md", "out": "/home/leczhang/research/prompting/./data/task_prompts/bbh_dyck_languages/protegi_Qwen2.5-7B-Instruct_log_1727609527.txt", "max_threads": 32, "temperature": 0.0, "optimizer": "nl-gradient", "rounds": 6, "beam_size": 4, "n_test_exs": 400, "minibatch_size": 64, "n_gradients": 4, "errors_per_gradient": 4, "gradients_per_error": 1, "steps_per_gradient": 1, "mc_samples_per_step": 2, "max_expansion_factor": 8, "engine": "chatgpt", "evaluator": "bf", "scorer": "custom", "eval_rounds": 8, "eval_prompts_per_round": 8, "samples_per_eval": 32, "c": 1.0, "knn_k": 2, "knn_t": 0.993, "reject_on_errors": false, "eval_budget": 2048}
+======== ROUND 0
+0.0007410049438476562
+('# Task\nCorrectly close a Dyck-n word.\n\n# Output format\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer to the question\n\n# Prediction\nQ: {question_prompt}',)
+(1.0,)
+[0.46]
