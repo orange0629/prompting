@@ -22,6 +22,7 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "brainteaser": "./data/benchmark/brainteaser/brainteaser_semantic-reconstruction.csv",
             "gsm8k": "./data/benchmark/gsm8k/gsm8k_test.csv",
             "timexnli": "./data/benchmark/timexnli/timexnli_cs2_timebench.jsonl",
+            "winogrande": "./data/benchmark/winogrande/winogrande.csv",
             }
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
@@ -138,6 +139,13 @@ class benchmark_base:
         else:
             return MULTIPLE_CHOICE_DEFAULT_USER_PROMPT
     
+
+    def get_user_prompt_new(self, prompt_type="base"):
+        with open(os.path.join(project_root_dir, f'./data/task_prompts/{self.name}/{prompt_type}.md'), 'r') as file:
+            user_prompt = file.read()
+        return user_prompt
+
+    
     def get_max_token_len(self):
         if self.cot != 0:
             return 512
@@ -173,9 +181,9 @@ class benchmark_mmlu(benchmark_base):
                 local_true_label_list = self.true_label_list
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
-            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
-                    f"{self.name.upper()}_error": error_num}
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    # f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    # f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
@@ -214,9 +222,9 @@ class benchmark_arc(benchmark_base):
                 local_true_label_list = self.true_label_list
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
-            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
-                    f"{self.name.upper()}_error": error_num}
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    # f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    # f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
@@ -253,9 +261,9 @@ class benchmark_hellaswag(benchmark_base):
                 local_true_label_list = self.true_label_list
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
-            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),
-                    f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
-                    f"{self.name.upper()}_error": error_num}
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    # f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    # f"{self.name.upper()}_error": error_num}
             
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
@@ -303,7 +311,7 @@ class benchmark_truthfulqa(benchmark_base):
                     f"{self.name.upper()}_BLEU_acc": bleu_tmp["BLEU_acc"],
                     #f"{self.name.upper()}_rouge1_acc": rouge_tmp["rouge1_acc"],
                     #f"{self.name.upper()}_BLEURT_full": bleurt_tmp,
-                    f"{self.name.upper()}_BLEU_full": bleu_tmp,
+                    #f"{self.name.upper()}_BLEU_full": bleu_tmp,
                     #f"{self.name.upper()}_ROUGE_full": rouge_tmp,
                     }
 
@@ -432,7 +440,7 @@ class benchmark_hitom(benchmark_base):
             for idx in range(len(local_true_label_list)):
                 if not (local_true_label_list[idx].lower() in pred_label_list[idx].lower().replace(" ", "") or local_true_label_list[idx].lower().replace("_", " ") in pred_label_list[idx].lower()):
                     error_idx.append(idx)
-            metrics = {f"{self.name.upper()}_acc_no_error": 1 - len(error_idx)/len(local_true_label_list)}
+            metrics = {f"{self.name.upper()}_acc": 1 - len(error_idx)/len(local_true_label_list)}
 
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = error_idx
@@ -497,7 +505,7 @@ class benchmark_edos(benchmark_base):
                     for sub_option in classify_options:
                         if sub_option in pred_label_list[idx].lower():
                             pred_label_list[idx] = classify_options[sub_option]
-                metrics = {f"{self.name.upper()}_f1_no_error": f1_score(local_true_label_list, pred_label_list, average="macro", zero_division=0.0)}
+                metrics = {f"{self.name.upper()}_f1": f1_score(local_true_label_list, pred_label_list, average="macro", zero_division=0.0)}
             elif self.task_type == "taskc":
                 pass
 
@@ -531,7 +539,7 @@ class benchmark_ifeval(benchmark_base):
             else:
                 result_data_dict = dict(zip([self.data_df["prompt"][i] for i in eval_range], pred_label_list))
             import lib.ifeval.evaluation_main
-            metrics = {f"{self.name.upper()}_acc_no_error": lib.ifeval.evaluation_main.run_eval(os.path.join(project_root_dir, data_dir[self.name]), result_data_dict, eval_range)["acc"]}
+            metrics = {f"{self.name.upper()}_acc": lib.ifeval.evaluation_main.run_eval(os.path.join(project_root_dir, data_dir[self.name]), result_data_dict, eval_range)["acc"]}
         
         return metrics
     
@@ -671,7 +679,7 @@ class benchmark_bbh(benchmark_base):
                         pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
                     if re.search(pattern, pred_label_list[idx], re.IGNORECASE | re.MULTILINE):
                         correct_idx.append(idx)
-            metrics = {f"{self.name.upper()}_acc_no_error": len(correct_idx)/len(local_true_label_list)}
+            metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
@@ -752,7 +760,7 @@ class benchmark_gsm8k(benchmark_base):
                     pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
                 if re.search(pattern, pred_label_list[idx], re.IGNORECASE | re.MULTILINE):
                     correct_idx.append(idx)
-            metrics = {f"{self.name.upper()}_acc_no_error": len(correct_idx)/len(local_true_label_list)}
+            metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
@@ -793,6 +801,43 @@ class benchmark_timexnli(benchmark_base):
         return metrics
 
 
+class benchmark_winogrande(benchmark_base):
+    def __init__(self, cot):
+        self.name = "winogrande"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"{item['sentence'].strip()}\nA. {item['option1']}\nB. {item['option2']}\n"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["answer_letter"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu(cot=cot)
@@ -818,3 +863,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_gsm8k(cot=cot)
     elif "timexnli" in name:
         return benchmark_timexnli(cot=cot)
+    elif "winogrande" in name:
+        return benchmark_winogrande(cot=cot)

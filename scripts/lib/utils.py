@@ -235,7 +235,7 @@ def custom_f1_score(true_label_list, pred_label_list, model_name=""):
             no_error_true_label_list.append(true_label_list[idx])
             no_error_pred_label_list.append(pred_label_list[idx])
 
-    metrics = {f"{model_name}_f1": f1_score(full_true_label_list, full_pred_label_list, zero_division=0.0),
-            f"{model_name}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list, zero_division=0.0),
-            f"{model_name}_error": error_num}
+    metrics = {f"{model_name}_f1": f1_score(full_true_label_list, full_pred_label_list, zero_division=0.0),}
+            #f"{model_name}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list, zero_division=0.0),
+            #f"{model_name}_error": error_num}
     return metrics
