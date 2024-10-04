@@ -20,7 +20,9 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "ifeval": "./data/benchmark/ifeval/input_data.jsonl",
             "bbh": "./data/benchmark/bbh/",
             "brainteaser": "./data/benchmark/brainteaser/brainteaser_semantic-reconstruction.csv",
-            "gsm8k": "./data/benchmark/gsm8k/gsm8k_test.csv",}
+            "gsm8k": "./data/benchmark/gsm8k/gsm8k_test.csv",
+            "timexnli": "./data/benchmark/timexnli/timexnli_cs2_timebench.jsonl",
+            }
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
 #MULTIPLE_CHOICE_DEFAULT_USER_PROMPT = "The following is a multiple choice question (with answers). Reply with only the option letter.\n{question_prompt}"
@@ -757,6 +759,40 @@ class benchmark_gsm8k(benchmark_base):
         return metrics
 
 
+class benchmark_timexnli(benchmark_base):
+    def __init__(self, cot):
+        self.name = "timexnli"
+        self.data_df = pd.read_json(os.path.join(project_root_dir, data_dir[self.name]), lines=True)
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"Premise: {item['Premise'].strip()}\nHypothesis: {item['Hypothesis'].strip()}"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = [1 if label_tmp == "Contradiction" else 0 for label_tmp in self.data_df["Label"]]
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+        return metrics
+
+
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu(cot=cot)
@@ -780,3 +816,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_brainteaser(cot=cot)
     elif "gsm8k" in name:
         return benchmark_gsm8k(cot=cot)
+    elif "timexnli" in name:
+        return benchmark_timexnli(cot=cot)
