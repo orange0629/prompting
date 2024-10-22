@@ -1,4 +1,4 @@
-# You don’t need a personality test to know these models are unreliable: Assessing the Reliability of Large Language Models on Psychometric Instruments
+# SPRIG: Improving Large Language Model Performance by System Prompt Optimization
 #### Lechen Zhang, Tolga Ergen, Lajanugen Logeswaran, Moontae Lee, David Jurgens
 
 <p align="center">
