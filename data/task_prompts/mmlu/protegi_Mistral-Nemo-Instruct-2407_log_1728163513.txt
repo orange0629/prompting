@@ -1,0 +1,11 @@
+{"task": "mmlu", "model_dir": "mistralai/Mistral-Nemo-Instruct-2407", "prompts": "/home/leczhang/research/prompting/./data/task_prompts/mmlu/./base.md", "out": "/home/leczhang/research/prompting/./data/task_prompts/mmlu/protegi_Mistral-Nemo-Instruct-2407_log_1728163513.txt", "max_threads": 32, "temperature": 0.0, "optimizer": "nl-gradient", "rounds": 6, "beam_size": 4, "n_test_exs": 400, "minibatch_size": 64, "n_gradients": 4, "errors_per_gradient": 4, "gradients_per_error": 1, "steps_per_gradient": 1, "mc_samples_per_step": 2, "max_expansion_factor": 8, "engine": "chatgpt", "evaluator": "bf", "scorer": "custom", "eval_rounds": 8, "eval_prompts_per_round": 8, "samples_per_eval": 32, "c": 1.0, "knn_k": 2, "knn_t": 0.993, "reject_on_errors": false, "multi_gpu": 1, "eval_budget": 2048}
+======== ROUND 0
+0.0008389949798583984
+('# Task\nThe following is a multiple choice question (with answers).\n\n# Output format\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).\n\n# Prediction\nQ: {question_prompt}',)
+(1.0,)
+[0.6575]
+======== ROUND 1
+107.3641996383667
+('# Task\nThis is a question with multiple choices for answers.\n\n# Output format\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).\n\n# Prediction\nQ: {question_prompt}', '# Task\nThe following is a multiple choice question (with answers).\n\n# Output format\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).\n\n# Prediction\nQ: {question_prompt}', '# Task\nSelect the accurate choice for the subsequent multiple choice query:\n\n# Output format\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).\n\n# Prediction\nQ: {question_prompt}', '# Task\nThe upcoming question is multiple choice and pertains to special relativity.\n\n# Output format\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer (option letter only).\n\n# Prediction\nQ: {question_prompt}')
+(0.66, 0.66, 0.64, 0.63)
+[0.6575, 0.6575, 0.64, 0.65]
