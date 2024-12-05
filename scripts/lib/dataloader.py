@@ -23,6 +23,20 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "gsm8k": "./data/benchmark/gsm8k/gsm8k_test.csv",
             "timexnli": "./data/benchmark/timexnli/timexnli_cs2_timebench.jsonl",
             "winogrande": "./data/benchmark/winogrande/winogrande.csv",
+            "tombench": "./data/benchmark/tombench/",
+            "emobench": "./data/benchmark/emobench/emobench.csv",
+            "commonsenseqa": "./data/benchmark/commonsenseqa/commonsenseqa.jsonl",
+            "boolq": "./data/benchmark/boolq/boolq.csv",
+            "bb_minute_mysteries_qa": "./data/benchmark/bb/bb_minute_mysteries_qa.csv",
+            "strategyqa": "./data/benchmark/strategyqa/strategyqa.csv",
+            "musr": "./data/benchmark/musr/musr.csv",
+            "piqa": "./data/benchmark/piqa/piqa.csv",
+            "riddlesense": "./data/benchmark/riddlesense/riddlesense.csv",
+            "mgsm": "./data/benchmark/mgsm/mgsm.csv",
+            "belebele": "./data/benchmark/belebele/belebele.csv",
+            "xcopa": "./data/benchmark/xcopa/xcopa.csv",
+            "m3exam": "./data/benchmark/m3exam/m3exam.csv",
+            "m_mmlu": "./data/benchmark/mmlu/m_mmlu.csv",
             }
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
@@ -80,13 +94,17 @@ class benchmark_base:
             text = text[start:]
             
             if result_type == "multiple_choice":
-                pattern = re.compile(r'[ABCD]')
-                matches = list(pattern.finditer(text))
-                if matches:
-                    if self.cot != 0:
-                        pred_label_list.append(matches[-1].group())
-                    else:
-                        pred_label_list.append(matches[0].group())
+                pattern = r'\b[A-Z]\b'
+                # pattern = re.compile(r'[ABCD]')
+                match = re.search(pattern, text, re.MULTILINE)
+                if match:
+                    pred_label_list.append(match.group(0))
+                # matches = list(pattern.finditer(text))
+                # if matches:
+                #     if self.cot != 0:
+                #         pred_label_list.append(matches[-1].group())
+                #     else:
+                #         pred_label_list.append(matches[0].group())
                 else:
                     pred_label_list.append(text)
                     error_num += 1
@@ -794,7 +812,7 @@ class benchmark_timexnli(benchmark_base):
                 local_true_label_list = self.true_label_list
             else:
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
-            metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(list(map(str, local_true_label_list)), list(map(str, pred_label_list)))}
 
             if return_error_idx:
                 metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
@@ -838,6 +856,508 @@ class benchmark_winogrande(benchmark_base):
         return metrics
 
 
+class benchmark_tombench(benchmark_base):
+    def __init__(self, benchmark_name, cot):
+        self.name = benchmark_name
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir["tombench"], f"{self.name}.csv"))
+        self.cot = cot
+        self.task_type = self.name[len("tombench_"):]
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"Story: {item['STORY'].strip()}\nQuestion: {item['QUESTION']}\nA. {item['OPTION-A']}\nB. {item['OPTION-B']}\nC. {item['OPTION-C']}\nD. {item['OPTION-D']}\n"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["ANSWER"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_emobench(benchmark_base):
+    def __init__(self, cot):
+        self.name = "emobench"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = self.data_df["Question_en"]
+        
+        self.true_label_list = list(self.data_df["Answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_commonsenseqa(benchmark_base):
+    def __init__(self, cot):
+        self.name = "commonsenseqa"
+        self.data_df = pd.read_json(os.path.join(project_root_dir, data_dir[self.name]), lines=True)
+        self.cot = cot
+
+        self.question_list = self.data_df["full_question"]
+        
+        self.true_label_list = list(self.data_df["answerKey"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_boolq(benchmark_base):
+    def __init__(self, cot):
+        self.name = "boolq"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f'''Context: {item['passage'].strip()}\nQuestion: {item["question"]}?\n'''
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["label"])
+    
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(list(map(str, local_true_label_list)), list(map(str, pred_label_list)))}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_bb_minute_mysteries_qa(benchmark_base):
+    def __init__(self, cot):
+        self.name = "bb_minute_mysteries_qa"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = self.data_df["Question"]
+        
+        self.true_label_list = list(self.data_df["Answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_strategyqa(benchmark_base):
+    def __init__(self, cot):
+        self.name = "strategyqa"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = self.data_df["Question"]
+        
+        self.true_label_list = list(self.data_df["Answer"])
+    
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(list(map(str, local_true_label_list)), list(map(str, pred_label_list)))}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_musr(benchmark_base):
+    def __init__(self, cot):
+        self.name = "musr"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"Context: {item['narrative'].strip()}\n\nQuestion: {item['question']}\nA. {item['option1']}\nB. {item['option2']}\n"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+                    #f"{self.name.upper()}_acc_no_error": (accuracy_score(local_true_label_list, pred_label_list) * len(pred_label_list)) / (len(pred_label_list) - error_num) if (len(pred_label_list) - error_num != 0) else 0,
+                    #f"{self.name.upper()}_error": error_num}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_piqa(benchmark_base):
+    def __init__(self, cot):
+        self.name = "piqa"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"Goal: {item['goal'].strip()}\nA. {item['sol1']}\nB. {item['sol2']}\n"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_riddlesense(benchmark_base):
+    def __init__(self, cot):
+        self.name = "riddlesense"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = self.data_df["question"]
+        
+        self.true_label_list = list(self.data_df["answerKey"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_mgsm(benchmark_base):
+    def __init__(self, cot):
+        self.name = "mgsm"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = list(self.data_df["question"])
+        
+        self.true_label_list = list(self.data_df["answer"].apply(lambda x: str(x)))
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            assert len(local_true_label_list) == len(pred_label_list)
+            correct_idx = []
+            for idx in range(len(local_true_label_list)):
+                # If true answer start with special character
+                if bool(re.match(r'^\W', local_true_label_list[idx])):
+                    pattern = r'(?<!\w)' + re.escape(local_true_label_list[idx]) + r'(?!\S)'
+                else:
+                    pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
+                if re.search(pattern, pred_label_list[idx], re.IGNORECASE | re.MULTILINE):
+                    correct_idx.append(idx)
+            metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+        return metrics
+
+
+class benchmark_belebele(benchmark_base):
+    def __init__(self, cot):
+        self.name = "belebele"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = self.data_df["formatted_question"]
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+    
+
+class benchmark_xcopa(benchmark_base):
+    def __init__(self, cot):
+        self.name = "xcopa"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = self.data_df["formatted_question"]
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
+class benchmark_m3exam(benchmark_base):
+    def __init__(self, cot):
+        self.name = "m3exam"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = list(self.data_df["formatted_question"])
+        
+        self.true_label_list = list(self.data_df["answer_text"].apply(lambda x: str(x)))
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            assert len(local_true_label_list) == len(pred_label_list)
+            correct_idx = []
+            for idx in range(len(local_true_label_list)):
+                # If it's multiple choice
+                pattern_A = r'^\([A-Z]\)$'
+                if re.match(pattern_A, local_true_label_list[idx]):
+                    letter_A = local_true_label_list[idx][1]
+                    pattern_B = r'\b[A-Z]\b'
+                    match_B = re.search(pattern_B, pred_label_list[idx], re.MULTILINE)
+                    if match_B:
+                        if letter_A == match_B.group(0):
+                            correct_idx.append(idx)
+                else:
+                    # If true answer start with special character
+                    if bool(re.match(r'^\W', local_true_label_list[idx])):
+                        pattern = r'(?<!\w)' + re.escape(local_true_label_list[idx]) + r'(?!\S)'
+                    else:
+                        pattern = r'\b' + re.escape(local_true_label_list[idx]) + r'\b'
+                    if re.search(pattern, pred_label_list[idx], re.IGNORECASE | re.MULTILINE):
+                        correct_idx.append(idx)
+            metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+        return metrics
+
+
+class benchmark_m_mmlu(benchmark_base):
+    def __init__(self, cot):
+        self.name = "m_mmlu"
+        self.data_df = pd.read_csv(os.path.join(project_root_dir, data_dir[self.name]))
+        self.cot = cot
+
+        self.question_list = list(self.data_df["formatted_question"])
+        
+        self.true_label_list = list(self.data_df["answer"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+    
+
+
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu(cot=cot)
@@ -865,3 +1385,31 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_timexnli(cot=cot)
     elif "winogrande" in name:
         return benchmark_winogrande(cot=cot)
+    elif "tombench" in name:
+        return benchmark_tombench(name, cot=cot)
+    elif "emobench" in name:
+        return benchmark_emobench(cot=cot)
+    elif "commonsenseqa" in name:
+        return benchmark_commonsenseqa(cot=cot)
+    elif "boolq" in name:
+        return benchmark_boolq(cot=cot)
+    elif "bb_minute_mysteries_qa" in name:
+        return benchmark_bb_minute_mysteries_qa(cot=cot)
+    elif "strategyqa" in name:
+        return benchmark_strategyqa(cot=cot)
+    elif "musr" in name:
+        return benchmark_musr(cot=cot)
+    elif "piqa" in name:
+        return benchmark_piqa(cot=cot)
+    elif "riddlesense" in name:
+        return benchmark_riddlesense(cot=cot)
+    elif "mgsm" in name:
+        return benchmark_mgsm(cot=cot)
+    elif "belebele" in name:
+        return benchmark_belebele(cot=cot)
+    elif "xcopa" in name:
+        return benchmark_xcopa(cot=cot)
+    elif "m3exam" in name:
+        return benchmark_m3exam(cot=cot)
+    elif name == "m_mmlu":
+        return benchmark_m_mmlu(cot=cot)
