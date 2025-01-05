@@ -35,10 +35,19 @@ output_dir = f'''./results/exp_results.jsonl'''
 benchmark_lst = args.benchmark.lower().split(",")
 
 for benchmark_name in tqdm(benchmark_lst):
-    benchmark_obj = init_benchmark(name=benchmark_name.lower(), cot=args.cot)
+    if benchmark_name.lower().startswith("seacrowd"):
+        # Extract dataset name for SEACrowd benchmarks
+        dataset_name = benchmark_name.lower().split("_")[1] if "_" in benchmark_name else "khpos"
+        benchmark_obj = init_benchmark(name=benchmark_name.lower(), cot=args.cot, seacrowd_params={"dataset_name": dataset_name})
+    else:
+        benchmark_obj = init_benchmark(name=benchmark_name.lower(), cot=args.cot)
+
     q_list, eval_range = benchmark_obj.load_random_question_list(num_q=None, split=args.eval_subset)
-    with open(f'./data/task_prompts/{benchmark_name}/{args.task_prompts_ver}.md', 'r', encoding="utf-8") as file:
-        user_prompt = file.read()
+    if benchmark_name.lower().startswith("seacrowd"):
+        user_prompt = "Answer the following question based on the provided dataset:\n{question_prompt}\nAnswer:"
+    else:
+        with open(f'./data/task_prompts/{benchmark_name}/{args.task_prompts_ver}.md', 'r', encoding="utf-8") as file:
+            user_prompt = file.read()
 
     system_prompt = system_prompt.replace(" /// ", " ")
     answer_prompts = []

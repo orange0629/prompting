@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 from datasets import load_metric, load_dataset
 from tqdm import tqdm
+import seacrowd as sc
 import lib.utils
 import os
 import re
@@ -1356,6 +1357,57 @@ class benchmark_m_mmlu(benchmark_base):
 
         return metrics
     
+def load_seacrowd_dataset(dataset_name, schema="seacrowd"):
+    """
+    Load a dataset from SEACrowd.
+
+    Args:
+        dataset_name (str): The name of the dataset to load (e.g., 'khpos').
+        schema (str): Schema to use for loading (default: 'seacrowd').
+
+    Returns:
+        A dataset object compatible with the current framework.
+    """
+    try:
+        dataset = sc.load_dataset(dataset_name, schema=schema)
+        print(f"Successfully loaded SEACrowd dataset: {dataset_name}")
+        return dataset
+    except Exception as e:
+        print(f"Error loading SEACrowd dataset '{dataset_name}': {e}")
+        return None
+
+class benchmark_seacrowd(benchmark_base):
+    def __init__(self, dataset_name, schema="seacrowd", cot=0):
+        self.name = f"seacrowd_{dataset_name}"
+        self.dataset_name = dataset_name
+        self.schema = schema
+        self.cot = cot
+        
+        # Load dataset
+        dataset = load_seacrowd_dataset(dataset_name, schema=schema)
+        if dataset:
+            self.data_df = pd.DataFrame(dataset["data"])
+            self.metadata = dataset["meta"]
+        else:
+            raise ValueError(f"Failed to load SEACrowd dataset: {dataset_name}")
+        
+        # Extract questions and labels
+        self.question_list = list(self.data_df["question"])
+        self.true_label_list = list(self.data_df["label"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            local_true_label_list = self.true_label_list if eval_range is None else [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+        
+        return metrics
+
 
 
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
@@ -1413,3 +1465,7 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_m3exam(cot=cot)
     elif name == "m_mmlu":
         return benchmark_m_mmlu(cot=cot)
+    elif name.startswith("seacrowd"):
+        dataset_name = seacrowd_params.get("dataset_name", "khpos")
+        schema = seacrowd_params.get("schema", "seacrowd")
+        return benchmark_seacrowd(dataset_name=dataset_name, schema=schema, cot=cot)
