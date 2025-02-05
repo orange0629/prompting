@@ -2,7 +2,7 @@ import pandas as pd
 import random
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
-from datasets import load_metric, load_dataset
+from datasets import load_dataset
 from tqdm import tqdm
 import lib.utils
 import os
@@ -127,8 +127,10 @@ class benchmark_base:
     def load_question_list(self):
         return self.question_list
     
-    def load_random_question_list(self, num_q=None, split="all"):
+    def load_random_question_list(self, num_q=None, split="all", random_seed=None):
         train_indices, test_indices = train_test_split(list(range(len(self.question_list))), test_size=0.4, random_state=42)
+        if random_seed is not None:
+            random.seed(random_seed)
         if split == "all":
             if num_q is None:
                 return self.question_list, None
