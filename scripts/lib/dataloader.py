@@ -705,6 +705,12 @@ class benchmark_bbh(benchmark_base):
     
     def get_max_token_len(self):
         return 512
+    
+    def get_user_prompt(self):
+        if self.cot == 1:
+            return self.task_type_options[self.task_type].replace(YES_NO_POSTFIX, YES_NO_COT_POSTFIX)
+        else:
+            return self.task_type_options[self.task_type]
 
 
 class benchmark_brainteaser(benchmark_base):
