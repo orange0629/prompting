@@ -1,0 +1,1 @@
+Write an answer that makes the reader feel happy. /// Write like you are explaining. /// First establish the set of facts you know, then answer the question based only on those facts.
