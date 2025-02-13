@@ -32,12 +32,14 @@ class BinaryPredictor(GPT4Predictor):
     
 
 class VLLMPredictor(GPT4Predictor):
-    def __init__(self, model_dir):
-        self.model_obj = inference_model(model_dir=model_dir, cache_dir="/shared/4/models/")
+    def __init__(self, model_dir, multi_thread=1, system_prompt=""):
+        self.model_obj = inference_model(model_dir=model_dir, cache_dir="/shared/4/models/", multi_thread=multi_thread)
+        self.system_prompt = system_prompt
 
     def inference(self, ex_lst, prompt):
         # user_prompt=Template(prompt).render(text=ex['text'])
-        prompt_lst = [self.model_obj.get_prompt_template().format(system_prompt="", user_prompt=str(prompt).format(question_prompt=ex['text'])) for ex in ex_lst]
+        print(prompt)
+        prompt_lst = [self.model_obj.get_prompt_template().format(system_prompt=self.system_prompt, user_prompt=str(prompt).replace("{question_prompt}", ex['text'])) for ex in ex_lst]
         response = self.model_obj.generate(prompt_lst, max_token_len=512, use_tqdm=True)
         print(response[:5])
         return response

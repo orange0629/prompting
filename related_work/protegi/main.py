@@ -54,8 +54,9 @@ def get_scorer(scorer):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', default='bbh_boolean_expressions')
-    #parser.add_argument('--data_dir', default='data/ethos')
+    parser.add_argument('--model_dir', default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     parser.add_argument('--prompts', default='prompts/bbh_boolean_expressions.md')
+    parser.add_argument('--system_prompt', default="no_sys")
     # parser.add_argument('--config', default='default.json')
     parser.add_argument('--out', default=f'protegi_{str(int(time.time()))}.txt')
     parser.add_argument('--max_threads', default=32, type=int)
@@ -86,6 +87,7 @@ def get_args():
     parser.add_argument('--knn_k', default=2, type=int)
     parser.add_argument('--knn_t', default=0.993, type=float)
     parser.add_argument('--reject_on_errors', action='store_true') 
+    parser.add_argument('--multi_gpu', default=1, type=int) 
     
     args = parser.parse_args()
 
@@ -95,10 +97,15 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
+    model_name = args.model_dir.split("/")[-1]
     saving_dir = os.path.join(project_root_dir, f"./data/task_prompts/{args.task}")
     if not os.path.exists(saving_dir):
         os.makedirs(saving_dir)
-    args.out = os.path.join(saving_dir, args.out)
+    args.out = os.path.join(saving_dir, f'protegi_{model_name}_{args.system_prompt}_log_{str(int(time.time()))}.log')
+    args.prompts = os.path.join(saving_dir, "./base.md")
+
+    with open(os.path.join(project_root_dir, f'./data/system_prompts/{args.system_prompt}.md'), 'r') as file:
+        system_prompt = file.read()
 
     config = vars(args)
 
@@ -109,7 +116,7 @@ if __name__ == '__main__':
     evaluator = get_evaluator(args.evaluator)(config)
     bf_eval = get_evaluator('bf')(config)
     gpt4 = predictors.BinaryPredictor(config)
-    llama_vllm = predictors.VLLMPredictor("meta-llama/Meta-Llama-3-8B-Instruct")
+    llama_vllm = predictors.VLLMPredictor(args.model_dir, args.multi_gpu, system_prompt=system_prompt)
 
     optimizer = optimizers.ProTeGi(
         config, evaluator, scorer, args.max_threads, bf_eval)
@@ -158,6 +165,9 @@ if __name__ == '__main__':
 
     print("DONE!")
 
-    
-    with open(os.path.join(saving_dir, "protegi_0.md"), 'w', encoding='utf-8') as file:
-        file.write(candidates[0])
+    if args.system_prompt == "no_sys":
+        with open(os.path.join(saving_dir, f"protegi_{model_name}.md"), 'w', encoding='utf-8') as file:
+            file.write(candidates[0])
+    else:
+        with open(os.path.join(saving_dir, f"protegi_{model_name}_{args.system_prompt}.md"), 'w', encoding='utf-8') as file:
+            file.write(candidates[0])
