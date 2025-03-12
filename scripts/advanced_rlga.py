@@ -72,8 +72,12 @@ for idx in range(len(benchmark_obj_list)):
 
 def worker(gpu_id, model_name, task_queue, result_queue):
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+    os.environ['CURL_CA_BUNDLE'] = ''
+    os.environ['HTTP_PROXY'] = "http://127.0.0.1:7890"
+    os.environ['HTTPS_PROXY'] = "http://127.0.0.1:7890"
+    os.environ['ALL_PROXY'] = "socks5://127.0.0.1:7890"
     from lib.modelloader import inference_model
-    model_obj = inference_model(model_name, use_vllm=True, cache_dir="/shared/4/models")
+    model_obj = inference_model(model_name, use_vllm=True, cache_dir="/scratch/qdj_project_owned_root/qdj_project_owned3/leczhang/models/")
     result_queue.put((gpu_id, "success"))
     while True:
         task = task_queue.get()
@@ -120,6 +124,117 @@ def generate_components(prompt: str, max_retries=3):
     print("Failed to expand prompt after maximum retries.")
     return []
 
+# 以下是遗传操作的具体实现示例
+def crossover(p1, p2):
+    """杂交操作：随机混合组件"""
+    combined = p1 + p2
+    random.shuffle(combined)
+
+    # 随机选择一个子代长度
+    min_len = min(len(p1), len(p2))
+    max_len = len(p1) + len(p2)
+    
+    # 使用高斯分布随机选取长度，保证大部分接近 max(len(p1), len(p2))，但仍有变化
+    mean_len = (len(p1) + len(p2)) / 2  # 取均值作为中心
+    std_dev = (max_len - min_len) / 4  # 设定标准差（越大波动越大）
+    child_length = int(random.gauss(mean_len, std_dev))
+    
+    # 限制范围
+    child_length = max(1, min(child_length, max_len))
+    
+    return combined[:child_length]
+
+def random_mutate(selected, action):
+    """随机变异：增/删组件"""
+    selected = selected.copy()
+    new_components = []
+    
+    if action == 'add_useful':
+        # 基于当前选择生成有用组件
+        prompt = f"""You are an expert in optimizing system prompts for LLMs to enhance their general performance. \
+Given the following list of system prompt components: {json.dumps(selected)}, generate 1-2 additional components \
+that can further improve the LLM's capabilities. Return the result strictly as a Python list of strings. \
+No additional explanations or formatting, only return the list."""
+        new = generate_components(prompt)
+        for comp in new:
+            insert_idx = random.randint(0, len(selected))
+            selected.insert(insert_idx, comp)
+        new_components.extend(new)
+        
+    elif action == 'add_useless':
+        # 添加无用组件
+        prompt = f"""Given the following list of system prompt components: {json.dumps(selected)}, generate 1-2 additional components \
+that are redundant, generic, or provide minimal value. Examples: ["Answer in English.", "Be polite."]. Return the result strictly \
+as a Python list of strings. No additional explanations or formatting, only return the list."""
+        new = generate_components(prompt)
+        for comp in new:
+            insert_idx = random.randint(0, len(selected))
+            selected.insert(insert_idx, comp)
+        new_components.extend(new)
+        
+    elif action == 'refine_subset' and len(selected)>=2:
+        # 精炼子集为单个组件
+        subset = random.sample(selected, min(random.randint(2, 5), len(selected)))
+        prompt = f"""Given the following list of sentences: {json.dumps(selected)}, combine these into one concise \
+sentence. No additional explanations or formatting, only return a sentence."""
+        refined = call_chatgpt(prompt)
+        if refined:
+            for item in subset:
+                selected.remove(item)
+            insert_idx = random.randint(0, len(selected))
+            selected.insert(insert_idx, refined)
+            new_components.append(refined)
+            
+    elif action == 'rephrase_subset' and len(selected)>=1:
+        # 重写子集组件
+        item = random.choice(selected)
+        prompt = f"""Rephrase this sentence keeping the same meaning: {item}. \
+No additional explanations or formatting, only return a sentence."""
+        new_c = call_chatgpt(prompt)
+        if new_c:
+            selected[selected.index(item)] = new_c
+    
+    elif action == 'swap' and len(selected) >= 2:
+        idx1, idx2 = random.sample(range(len(selected)), 2)
+        selected[idx1], selected[idx2] = selected[idx2], selected[idx1]
+    
+    elif action == 'delete' and selected:
+        remove_idx = random.randint(0, len(selected) - 1)
+        selected.pop(remove_idx)
+    
+    # 去重并更新全局组件列表
+    # unique_new = [c for c in new_components if c not in self.component_pool]
+    # self.component_pool.extend(unique_new)
+    
+    return selected
+
+def reproduce_child(parent, partner_lst):
+        ACTION_PROB = {
+            'add_useful': 0.025,
+            'add_useless': 0.01,
+            'refine_subset': 0.025,
+            'rephrase_subset': 0.025,
+            'swap': 0.05,
+            'delete': 0.05,
+            'crossover': 0.815
+        }
+        
+        action = random.choices(
+            list(ACTION_PROB.keys()),
+            weights=list(ACTION_PROB.values()),
+            k=1
+        )[0]
+
+        # action = "crossover"
+
+        if action == "crossover":
+            partner = random.choice(partner_lst)
+            child = crossover(parent, partner)
+            return child
+        else:
+            return random_mutate(parent, action)
+        
+
 class GeneticRLPrompter:
     
     def __init__(self, init_components, reward_checkpoint):
@@ -135,10 +250,18 @@ class GeneticRLPrompter:
             self.reward_tokenizer.pad_token = self.reward_tokenizer.eos_token
             self.reward_model.config.pad_token_id = self.reward_tokenizer.eos_token_id
         
-        self.true_scores = {}  # 缓存真实评估结果
         self.component_pool = init_components.copy()
         self.optimize_history = []
+        self.eval_score_history = []
         self.step_idx = 0
+    
+    def save_history(self, args):
+        with open(os.path.join(args.output_dir, f"rlga_history_{args.model_name.split('/')[-1]}_20250311.jsonl"), "w", encoding="utf-8") as f:
+            for entry in self.optimize_history:
+                f.write(json.dumps(entry) + "\n")
+        with open(os.path.join(args.output_dir, f"rlga_score_history_{args.model_name.split('/')[-1]}_20250311.jsonl"), "w", encoding="utf-8") as f:
+            for entry in self.eval_score_history:
+                f.write(json.dumps(entry) + "\n")
     
     def evaluate_with_reward_model(self, prompt_lst):
         def tokenize_function(examples):
@@ -212,29 +335,7 @@ class GeneticRLPrompter:
 
         return metric_dict
     
-    def reproduce_child(self, parent, partner_lst):
-        ACTION_PROB = {
-            'add_useful': 0.05,
-            'add_useless': 0.025,
-            'refine_subset': 0.05,
-            'rephrase_subset': 0.05,
-            'crossover': 0.825
-        }
-        
-        action = random.choices(
-            list(ACTION_PROB.keys()),
-            weights=list(ACTION_PROB.values()),
-            k=1
-        )[0]
-
-        if action == "crossover":
-            partner = random.choice(partner_lst)
-            child = self.crossover(parent, partner)
-            return child
-        else:
-            return self.random_mutate(parent, action)
-    
-    def evolutionary_step(self):
+    def evolutionary_step(self, args):
         self.step_idx += 1
 
         # 阶段1：奖励模型评估
@@ -243,7 +344,17 @@ class GeneticRLPrompter:
         # 阶段2：淘汰后50%
         sorted_population = sorted(zip(scores, self.population), key=lambda x: x[0], reverse=True)
         survivors = [ind for _, ind in sorted_population[:len(scores)//2]]
-        
+
+        # 阶段2.5：dev set评估Top 10
+        top_10_survivors = survivors[:10]
+        dev_scores_dict = self.run_model_eval_multigpu([" ".join(tmp) for tmp in top_10_survivors], task_queue, result_queue, benchmark_obj_list, model_name=args.model_name.split("/")[-1], split="dev", random_seed_lst=[None for _ in range(len(top_10_survivors))])
+        dev_scores = [dev_scores_dict[f"{args.model_name.split('/')[-1]}/{eval_metric_name}"][" ".join(tmp)] for tmp in top_10_survivors]
+        for tmp_idx in range(len(top_10_survivors)):
+            self.eval_score_history.append({"step": self.step_idx, "system_prompt": top_10_survivors[tmp_idx], "split": "dev", "score": dev_scores[tmp_idx]})
+        wandb.log({"dev_score": np.mean(dev_scores)}, step=self.step_idx)
+        print(f"Step {self.step_idx}: Dev Score: {np.mean(dev_scores)}", flush=True)
+
+
         # 阶段3：生成新后代
         top_10 = survivors[:len(survivors)//10]
         top_50 = survivors[:len(survivors)//2]
@@ -251,8 +362,10 @@ class GeneticRLPrompter:
         # 遗传操作参数
         parents_to_reproduce = random.choices(top_10, k=len(survivors))
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = {executor.submit(self.reproduce_child, parent, top_50): parent for parent in parents_to_reproduce}
-            new_children = [future.result() for future in concurrent.futures.as_completed(futures)]
+            futures = {executor.submit(reproduce_child, parent, top_50): parent for parent in parents_to_reproduce}
+            new_children = []
+            for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Processing"):
+                new_children.append(future.result())
         
         # 更新种群（保持总数量稳定）
         self.population = survivors + new_children
@@ -260,95 +373,76 @@ class GeneticRLPrompter:
         
         # 阶段4：真实评估采样
         sample_size = min(100, len(self.population))
-        sampled = survivors[:5]
+        sampled = survivors[:10]
         if args.retrain:
             sampled += random.sample(self.population, sample_size)
-        real_scores_dict = self.run_model_eval_multigpu([" ".join(tmp) for tmp in sampled], task_queue, result_queue, benchmark_obj_list, model_name=args.model_name, split="train")
-        real_scores = [real_scores_dict[f"{args.model_name}/{eval_metric_name}"][tmp] for tmp in sampled]
-        self.optimize_history.append({"step": self.step_idx, "train_score": np.mean(real_scores[:5]), "candidates": dict(zip(sampled, real_scores)), "population": self.population})
-        wandb.log({"train_score": np.mean(real_scores[:5])}, step=self.step_idx, commit=True)
+        real_scores_dict = self.run_model_eval_multigpu([" ".join(tmp) for tmp in sampled], task_queue, result_queue, benchmark_obj_list, model_name=args.model_name.split("/")[-1], split="train")
+        real_scores = [real_scores_dict[f"{args.model_name.split('/')[-1]}/{eval_metric_name}"][" ".join(tmp)] for tmp in sampled]
+        for tmp_idx in range(len(sampled)):
+            self.eval_score_history.append({"step": self.step_idx, "system_prompt": sampled[tmp_idx], "split": "train", "score": real_scores[tmp_idx]})
+        self.optimize_history.append({"step": self.step_idx, "train_score": np.mean(real_scores[:10]), "candidates": dict(zip([" /// ".join(tmp) for tmp in sampled], real_scores)), "population": self.population})
+        wandb.log({"train_score": np.mean(real_scores[:10])}, step=self.step_idx)
+        print(f"Step {self.step_idx}: Train Score: {np.mean(real_scores[:10])}", flush=True)
 
         # 阶段5：更新奖励模型
         if args.retrain:
-            X = [self.extract_features(p) for p in sampled]
-            y = real_scores
-            self.reward_model.fit(X, y)
-    
-    # 以下是遗传操作的具体实现示例
-    def crossover(self, p1, p2):
-        """杂交操作：随机混合组件"""
-        combined = p1 + p2
-        random.shuffle(combined)
-
-        # 随机选择一个子代长度
-        min_len = min(len(p1), len(p2))
-        max_len = len(p1) + len(p2)
-        
-        # 使用高斯分布随机选取长度，保证大部分接近 max(len(p1), len(p2))，但仍有变化
-        mean_len = (len(p1) + len(p2)) / 2  # 取均值作为中心
-        std_dev = (max_len - min_len) / 4  # 设定标准差（越大波动越大）
-        child_length = int(random.gauss(mean_len, std_dev))
-        
-        # 限制范围
-        child_length = max(1, min(child_length, max_len))
-        
-        return combined[:child_length]
-    
-    def random_mutate(self, prompt, action):
-        """随机变异：增/删组件"""
-        new_components = []
-        
-        if action == 'add_useful':
-            # 基于当前选择生成有用组件
-            prompt = f"""You are an expert in optimizing system prompts for LLMs to enhance their general performance. \
-Given the following list of system prompt components: {json.dumps(selected)}, generate 1-2 additional components \
-that can further improve the LLM's capabilities. Return the result strictly as a Python list of strings. \
-No additional explanations or formatting, only return the list."""
-            new = generate_components(prompt)
-            selected += new
-            new_components.extend(new)
-            
-        elif action == 'add_useless':
-            # 添加无用组件
-            prompt = f"""Given the following list of system prompt components: {json.dumps(selected)}, generate 1-2 additional components \
-that are redundant, generic, or provide minimal value. Examples: ["Answer in English.", "Be polite."]. Return the result strictly \
-as a Python list of strings. No additional explanations or formatting, only return the list."""
-            new = generate_components(prompt)
-            selected += new
-            new_components.extend(new)
-            
-        elif action == 'refine_subset' and len(selected)>=2:
-            # 精炼子集为单个组件
-            subset = random.sample(selected, min(random.randint(2, 5), len(selected)))
-            prompt = f"""Given the following list of sentences: {json.dumps(selected)}, combine these into one concise \
-sentence. No additional explanations or formatting, only return a sentence."""
-            refined = call_chatgpt(prompt)
-            if refined:
-                selected = [c for c in selected if c not in subset] + [refined]
-                new_components.append(refined)
+            from reward_modeling.main import PromptRewardTrainer, RewardConfig, RewardDataCollatorWithPadding, generate_comparisons
+            from sklearn.model_selection import train_test_split
+            prompt_template = "{system_prompt}"
+            full_replay = [{"prompt": " /// ".join(x["system_prompt"]), "avg_score": x["score"]} for x in self.eval_score_history if x["split"] == "train" and x["step"] < self.step_idx]
+            data = [{"prompt": p_tmp, "avg_score": score_tmp} for p_tmp, score_tmp in list(zip([" /// ".join(tmp) for tmp in sampled], real_scores))] + random.sample(full_replay, min(50, len(full_replay)))
+            train_data, test_data = train_test_split(data, test_size=0.4, random_state=42)
+            train_dataset = generate_comparisons(train_data, prompt_template, col_name="avg_score").select(range(len(train_data)*10))
+            test_dataset = generate_comparisons(test_data, prompt_template, col_name="avg_score").select(range(len(test_data)*10))
+            def tokenize_function(examples):
+                tokens_chosen = self.reward_tokenizer(examples["example_chosen"], padding='max_length', truncation=True, max_length=512)
+                tokens_rejected = self.reward_tokenizer(examples["example_rejected"], padding='max_length', truncation=True, max_length=512)
                 
-        elif action == 'rephrase_subset' and len(selected)>=1:
-            # 重写子集组件
-            subset = random.sample(selected, min(random.randint(1, 5), len(selected)))
-            rephrased = []
-            for c in subset:
-                prompt = f"""Rephrase this sentence keeping the same meaning: {c}. \
-No additional explanations or formatting, only return a sentence."""
-                new_c = call_chatgpt(prompt)
-                if new_c:
-                    rephrased.append(new_c)
-            if rephrased:
-                selected = [c for c in selected if c not in subset] + rephrased
-                # new_components.extend(rephrased)
-        
-        # 去重并更新全局组件列表
-        unique_new = [c for c in new_components if c not in self.component_pool]
-        self.component_pool.extend(unique_new)
+                return {
+                    "input_ids_chosen": tokens_chosen["input_ids"],
+                    "attention_mask_chosen": tokens_chosen["attention_mask"],
+                    "input_ids_rejected": tokens_rejected["input_ids"],
+                    "attention_mask_rejected": tokens_rejected["attention_mask"],
+                    "score_chosen": examples["score_chosen"],
+                    "score_rejected": examples["score_rejected"],
+                    "margin": list((np.array(examples["score_chosen"]) - np.array(examples["score_rejected"]))*100),
+                }
 
-        selected = list(set(selected))
-        random.shuffle(selected)
-        
-        return selected
+            tokenized_train_dataset = train_dataset.map(tokenize_function, batched=True)
+            tokenized_test_dataset = test_dataset.map(tokenize_function, batched=True)
+            self.reward_model.train()
+            training_args = RewardConfig(
+                output_dir=args.cache_dir,
+                per_device_train_batch_size=8,
+                per_device_eval_batch_size=8,
+                evaluation_strategy="steps",
+                eval_steps=10,
+                num_train_epochs=1,
+                save_strategy="steps",
+                save_steps=50,
+                load_best_model_at_end=True,
+                metric_for_best_model="accuracy",
+                greater_is_better=True,
+                save_total_limit=2,
+                gradient_accumulation_steps=1,
+                gradient_checkpointing=True,
+                bf16=True,
+                logging_strategy="steps",
+                logging_steps=1, # warmup_ratio=0.03,
+                report_to='wandb',
+                max_length=512,
+            )
+            trainer = PromptRewardTrainer(
+                model=self.reward_model,
+                args=training_args,
+                tokenizer=self.reward_tokenizer,
+                train_dataset=tokenized_train_dataset,
+                eval_dataset=tokenized_test_dataset,
+                data_collator=RewardDataCollatorWithPadding(self.reward_tokenizer),
+            )
+            trainer.train()
+
+
     
 
 # 初始化运行示例
@@ -357,13 +451,14 @@ if __name__ == "__main__":
     parser.add_argument('--model_name', type=str, required=True, help="Path to base model")
     parser.add_argument('--reward_path', type=str, help="Path to the reward model")
     parser.add_argument('--retrain', default=False, action='store_true')
+    parser.add_argument('--output_dir', type=str, help="Path to save the trained model")
+    parser.add_argument('--cache_dir', type=str, help="Path to save the trained model")
     # parser.add_argument('--mode', choices=['train', 'test'], required=True, help="Mode: train or test")
     # parser.add_argument('--base_model', type=str, required=True, help="Path to base model")
     # parser.add_argument('--model_checkpoint', type=str, help="Path to the model checkpoint")
     # parser.add_argument('--train_path', type=str, help="Path to the training dataset (JSONL)")
     # parser.add_argument('--dev_path', type=str, help="Path to the dev dataset (JSONL)")
     # parser.add_argument('--test_path', type=str, help="Path to the test dataset (JSONL)")
-    # parser.add_argument('--output_dir', type=str, help="Path to save the trained model")
     # parser.add_argument('--output_predictions_path', type=str, help="Path to save predictions (for test mode)")
     # parser.add_argument('--learning_rate', type=float, default=2e-5, help="Learning rate for training")
     # parser.add_argument('--train_batch_size', type=int, default=1, help="Training batch size")
@@ -376,7 +471,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Multigpu settings
-    GPU_IDX_LIST = [0,1,3]
+    GPU_IDX_LIST = [1,2,3]
     task_queue = multiprocessing.Queue()
     result_queue = multiprocessing.Queue()
     workers = []
@@ -389,6 +484,8 @@ if __name__ == "__main__":
         load_signal = result_queue.get()
         assert load_signal[1] == "success"
     
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
     from transformers import (
             AutoModelForSequenceClassification,
             AutoTokenizer,
@@ -397,11 +494,14 @@ if __name__ == "__main__":
     from torch.utils.data import DataLoader
     import torch
 
-    init_components = [...]  # 这里填入30000个初始组件
-    optimizer = GeneticRLPrompter(init_components, "/shared/3/projects/lechen/reward_model/synthetic_modernbert")
+
+    with open("./data/system_prompts/dynamic_components_20250127.json", "r", encoding="utf-8") as file:
+        init_components = json.load(file)
+    optimizer = GeneticRLPrompter(init_components, args.reward_path)
     
-    for generation in range(100):  # 运行10代
+    for generation in range(50):  # 运行50代
         print(f"Generation {generation+1}")
-        optimizer.evolutionary_step()
+        optimizer.evolutionary_step(args)
+        optimizer.save_history(args)
     
     
