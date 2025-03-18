@@ -64,33 +64,39 @@ class benchmark_base:
     def save_intermediate(self, pred_label_list, model_name, column_name, eval_range=None):
         if not os.path.exists(save_intermediate_dir):
             os.makedirs(save_intermediate_dir)
-        save_dir_tmp = f"{save_intermediate_dir}/{model_name}_{self.name}_results.csv"
+        save_dir_tmp = f"{save_intermediate_dir}/{model_name}_{self.name}_results.json"
         try:
-            save_df = pd.read_csv(save_dir_tmp)
-        except:
-            save_df = self.data_df.copy()
+            with open(save_dir_tmp, "r", encoding="utf-8") as f:
+                save_data = json.load(f)
+        except FileNotFoundError:
+            save_data = self.data_df.to_dict(orient="records")
+        
         if eval_range is None:
-            save_df[column_name] = pred_label_list
+            for i, record in enumerate(save_data):
+                record[column_name] = pred_label_list[i]
         else:
-            save_df.loc[eval_range, column_name] = pred_label_list
-        save_df.to_csv(save_dir_tmp, index=False)
+            for i, idx in enumerate(eval_range):
+                save_data[idx][column_name] = pred_label_list[i]
+        
+        with open(save_dir_tmp, "w", encoding="utf-8") as f:
+            json.dump(save_data, f, indent=4)
     
     def clean_text(self, text):
         pattern = r"[^a-zA-Z0-9 !#$%&()*'\"+,.:;<=>?@_{|}-]"
         cleaned_text = re.sub(pattern, ' ', text)
         return re.sub("\s\s+" , " ", cleaned_text).strip()
 
-    def result_list_preprocessing(self, pred_text_list, result_type="multiple_choice"):
+    def result_list_preprocessing(self, pred_text_list, result_type="multiple_choice", answer_identifier="Answer:"):
         error_num = 0
         pred_label_list = []
         for pred_text in pred_text_list:
-            text = self.clean_text(pred_text)
+            if answer_identifier == "Answer:":
+                text = self.clean_text(pred_text)
+            else:
+                text = pred_text
 
             # Answer tag extraction
-            start = text.find("<answer>") + len("<answer>") if text.find("<answer>") != -1 else 0
-            end = text.find("</answer>") if text.find("</answer>") != -1 else len(text)
-            text = text[start:end]
-            start = text.rfind("Answer:") + len("Answer:") if text.rfind("Answer:") != -1 else -5 #Only tolerate 5 chars
+            start = text.rfind(answer_identifier) + len(answer_identifier) if text.rfind(answer_identifier) != -1 else -5 #Only tolerate 5 chars
             text = text[start:]
             
             if result_type == "multiple_choice":
@@ -157,7 +163,7 @@ class benchmark_base:
                 rand_idx = random.sample(dev_indices, num_q)
                 return [self.question_list[i] for i in rand_idx], rand_idx
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         return dict()
     
     def get_user_prompt(self):
@@ -194,11 +200,11 @@ class benchmark_mmlu(benchmark_base):
         for idx in range(len(self.true_label_list)):
             self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -235,11 +241,11 @@ class benchmark_arc(benchmark_base):
                 self.true_label_list[idx] = num2letter[self.true_label_list[idx]]
     
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -274,11 +280,11 @@ class benchmark_hellaswag(benchmark_base):
             self.true_label_list[idx] = num2letter[int(self.true_label_list[idx])+1]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -314,11 +320,11 @@ class benchmark_truthfulqa(benchmark_base):
     def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -413,11 +419,11 @@ class benchmark_socket(benchmark_base):
             return self.task_type_options[self.task_type]
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -448,11 +454,11 @@ class benchmark_hitom(benchmark_base):
         self.true_label_list = list(self.data_df["answer"])
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -503,16 +509,16 @@ class benchmark_edos(benchmark_base):
             return self.task_type_options[self.task_type]['prompt']
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
         if self.task_type == "taska":
-            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="yes_no")
         elif self.task_type == "taskb":
-            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         elif self.task_type == "taskc":
-            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+            pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -551,11 +557,11 @@ class benchmark_ifeval(benchmark_base):
     def get_user_prompt(self):
         return QA_DEFAULT_USER_PROMPT
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -672,11 +678,11 @@ class benchmark_bbh(benchmark_base):
         self.true_label_list = list(self.data_df["target"])
 
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -735,11 +741,11 @@ class benchmark_brainteaser(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -769,11 +775,11 @@ class benchmark_gsm8k(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"].apply(lambda x: str(x)))
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -813,11 +819,11 @@ class benchmark_timexnli(benchmark_base):
         
         self.true_label_list = [1 if label_tmp == "Contradiction" else 0 for label_tmp in self.data_df["Label"]]
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -847,11 +853,11 @@ class benchmark_winogrande(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer_letter"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -885,11 +891,11 @@ class benchmark_tombench(benchmark_base):
         
         self.true_label_list = list(self.data_df["ANSWER"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -919,11 +925,11 @@ class benchmark_emobench(benchmark_base):
         
         self.true_label_list = list(self.data_df["Answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -953,11 +959,11 @@ class benchmark_commonsenseqa(benchmark_base):
         
         self.true_label_list = list(self.data_df["answerKey"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -991,11 +997,11 @@ class benchmark_boolq(benchmark_base):
         self.true_label_list = list(self.data_df["label"])
     
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -1023,11 +1029,11 @@ class benchmark_bb_minute_mysteries_qa(benchmark_base):
         
         self.true_label_list = list(self.data_df["Answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -1058,11 +1064,11 @@ class benchmark_strategyqa(benchmark_base):
         self.true_label_list = list(self.data_df["Answer"])
     
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="yes_no")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="yes_no")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -1093,11 +1099,11 @@ class benchmark_musr(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -1130,11 +1136,11 @@ class benchmark_piqa(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -1162,11 +1168,11 @@ class benchmark_riddlesense(benchmark_base):
         
         self.true_label_list = list(self.data_df["answerKey"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -1194,11 +1200,11 @@ class benchmark_mgsm(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"].apply(lambda x: str(x)))
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -1235,11 +1241,11 @@ class benchmark_belebele(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -1267,11 +1273,11 @@ class benchmark_xcopa(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
@@ -1299,11 +1305,11 @@ class benchmark_m3exam(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer_text"].apply(lambda x: str(x)))
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, result_type="raw")
+        pred_label_list, _ = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="raw")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
         
@@ -1350,11 +1356,11 @@ class benchmark_m_mmlu(benchmark_base):
         
         self.true_label_list = list(self.data_df["answer"])
 
-    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False):
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         # Save raw prediction
-        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate([self.clean_text(tmp_text) for tmp_text in pred_text_list], "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
-        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, result_type="multiple_choice")
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
         
         if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
 
