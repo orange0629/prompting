@@ -30,7 +30,7 @@ category_definitions = {
     "safety": "Ensures responsible and ethical responses (e.g., 'Avoid stereotyping.', 'If you are unsure, say I don’t know.')",
     "behavioral": "Directs how the model should approach answering (e.g., 'Ask follow-up questions before answering.')",
     "CoT": "Encourages step-by-step reasoning (e.g., 'Let’s think step by step.', 'Break the question into subquestions.')",
-    "cross-language": "Specifies the language usage in model outputs (e.g., 'Use English to reason and the language of the question to answer.')",
+    "cross-language": "Specifies the language usage or mixture behavior in model response (e.g., 'You must reason in English.', 'Rephrase the input to English and use the language of the question to answer.')",
 }
 
 target_per_category = 1000
