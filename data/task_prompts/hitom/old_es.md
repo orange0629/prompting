@@ -1,0 +1,5 @@
+Lea la siguiente historia y responda la pregunta de opción múltiple. 
+{question_prompt}
+
+Nota: Debe asumir lo siguiente. (1) Un agente es testigo de todos los movimientos antes de salir de un lugar. (2) Un agente A puede inferir el estado mental de otro agente B solo si A y B han estado en el mismo lugar, o han tenido interacciones privadas o públicas. (3) Tenga en cuenta que todos los agentes tienden a mentir. Lo que un personaje le dice a otros no afecta a su creencia real. Un agente tiende a confiar en un agente que salió de la habitación después de sí mismo. El orden de salida es conocido por todos los agentes. (4) Los agentes en comunicaciones privadas saben que otros no los oirán, pero saben que cualquiera puede escuchar cualquier declaración pública.
+Al final, **debe** escribir "Respuesta:" primero, luego debe imprimir su respuesta final (contenido de opción solamente).

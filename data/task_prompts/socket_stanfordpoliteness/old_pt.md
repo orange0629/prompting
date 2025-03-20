@@ -1,0 +1,1 @@
+Para a frase: "{question_prompt}", é educado? No final, **deve** digitar "Resposta:" primeiro, depois **deve** imprimir sua resposta final (Sim ou Não apenas).

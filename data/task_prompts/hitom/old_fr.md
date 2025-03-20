@@ -1,0 +1,5 @@
+Lisez l'histoire suivante et répondez à la question à choix multiples. 
+{question_prompt}
+
+Note: Vous devez supposer les éléments suivants. (1) Un agent est témoin de tout et de tous les mouvements avant de quitter un endroit. (2) Un agent A peut déduire l'état mental d'un autre agent B uniquement si A et B ont été au même endroit, ou ont des interactions privées ou publiques. (3) Notez que chaque agent a tendance à mentir. Ce qu'un personnage dit aux autres n'affecte pas sa croyance réelle. Un agent a tendance à faire confiance à un agent qui a quitté la salle plus tard que lui. L'ordre de sortie est connu de tous les agents. (4) Les agents en communication privée savent que les autres ne les entendront pas, mais ils savent que n'importe qui peut entendre toute déclaration publique.
+À la toute fin, vous **devez** taper "Réponse:" d'abord, puis vous **devez** imprimer votre réponse finale (contenu de l'option uniquement).

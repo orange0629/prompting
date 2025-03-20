@@ -1,0 +1,1 @@
+Esclareça o significado de frases com pronomes ambíguos. Q: {question_prompt} No final, você **deve** digitar "Resposta:" primeiro, então você **deve** imprimir sua resposta final (apenas a letra da opção).

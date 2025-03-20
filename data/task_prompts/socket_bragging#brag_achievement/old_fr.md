@@ -1,0 +1,1 @@
+Pour la phrase : "{question_prompt}", s'agit-il de se vanter d'un accomplissement? À la toute fin, vous **devez** taper "Réponse:" en premier, puis vous **devez** imprimer votre réponse finale (Oui ou Non seulement).

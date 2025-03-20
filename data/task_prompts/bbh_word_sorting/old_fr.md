@@ -1,0 +1,1 @@
+Trier une liste de mots. Q: {question_prompt} À la toute fin, vous **devez** taper "Réponse:" d'abord, puis vous **devez** imprimer votre réponse finale (seulement des mots séparés par des espaces).

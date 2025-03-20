@@ -1,0 +1,1 @@
+Pour la phrase: "{question_prompt}", exprime-t-elle de l'empathie ? À la toute fin, vous **devez** taper "Réponse:" d'abord, puis vous **devez** imprimer votre réponse finale (Oui ou Non uniquement).
