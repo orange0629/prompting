@@ -29,10 +29,13 @@ def load_jsonl(file_path):
     return data
 
 
-def generate_comparisons(data, prompt_template):
+def generate_comparisons(data, prompt_template, max_samples=100000, col_name = COL_NAME):
+    all_combinations = list(combinations(data, 2))
+    sampled_combinations = random.sample(all_combinations, min(max_samples, len(all_combinations)))
+
     comparisons = []
-    for item1, item2 in combinations(data, 2):
-        if item1[COL_NAME] > item2[COL_NAME]:
+    for item1, item2 in sampled_combinations:
+        if item1[col_name] > item2[col_name]:
             chosen, rejected = item1, item2
         else:
             chosen, rejected = item2, item1
@@ -44,8 +47,8 @@ def generate_comparisons(data, prompt_template):
         comparisons.append({
             "example_chosen": prompt_template.format(system_prompt=chosen["prompt"].replace(" /// ", " ")),
             "example_rejected": prompt_template.format(system_prompt=rejected["prompt"].replace(" /// ", " ")),
-            "score_chosen": chosen[COL_NAME],
-            "score_rejected": rejected[COL_NAME],
+            "score_chosen": chosen[col_name],
+            "score_rejected": rejected[col_name],
         })
     random.shuffle(comparisons)
     return Dataset.from_list(comparisons)
