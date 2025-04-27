@@ -37,6 +37,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "xcopa": "./data/benchmark/xcopa/xcopa.csv",
             "m3exam": "./data/benchmark/m3exam/m3exam.csv",
             "m_mmlu": "./data/benchmark/mmlu/m_mmlu.csv",
+            "mmlu_pro": "./data/benchmark/mmlu_pro/mmlu_pro.jsonl",
+            "ethics": "./data/benchmark/ethics/ethics.csv"
             }
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
@@ -53,7 +55,8 @@ YES_NO_COT_POSTFIX = " Think carefully step by step. Describe your reasoning in 
 QA_DEFAULT_USER_PROMPT = '{question_prompt}\nAt the very end, you **must** type "Answer:" first, then you **must** print your final answer to the question.'
 
 letter2num = {"A": 1, "B": 2, "C": 3, "D": 4, "Z": 5}
-num2letter = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E"}
+# num2letter = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E"}
+num2letter = {i: chr(ord('A') + (i - 1)) for i in range(1, 11)}
 
 class benchmark_base:
     def __init__(self, cot):
@@ -184,6 +187,86 @@ class benchmark_base:
             return 512
         else:
             return 16
+
+class benchmark_ethics(benchmark_base):
+    def __init__(self, cot):
+        self.name = "ethics"
+
+        input_path = os.path.join(project_root_dir, data_dir[self.name])
+        self.data_df = pd.read_csv(input_path)
+        
+        self.cot = cot
+        self.question_list = [q.strip() for q in self.data_df["question"]]
+        self.true_label_list = list(self.data_df["label"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
+        if save_intermediate[0] in ["all", "raw"]:
+            self.save_intermediate(pred_text_list, "raw_" + save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="yes_no")
+        
+        if save_intermediate[0] in ["all", "raw"]:
+            self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list)}
+            
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [
+                    i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b
+                ]
+
+        return metrics
+
+
+class benchmark_mmlu_pro(benchmark_base):
+    def __init__(self, cot):
+        self.name = "mmlu_pro"
+        
+        input_path = os.path.join(project_root_dir, data_dir[self.name])
+        with open(input_path, "r", encoding="utf-8") as f:
+            self.data = [json.loads(line) for line in f]
+
+        self.cot = cot
+        self.question_list = []
+        
+        for item in self.data:
+            q_text = item['question'].strip()
+            options = item['options']
+
+            option_text = ""
+            for idx, opt in enumerate(options):
+                option_text += f"{num2letter[idx + 1]}. {opt}\n"
+
+            full_question = f"{q_text}\n{option_text}"
+            self.question_list.append(full_question)
+
+        self.true_label_list = [item['answer'] for item in self.data]
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
+        if save_intermediate[0] in ["all", "raw"]:
+            self.save_intermediate(pred_text_list, "raw_" + save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
+        if save_intermediate[0] in ["all", "raw"]:
+            self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+        return metrics
+
 
 class benchmark_mmlu(benchmark_base):
     def __init__(self, cot):
@@ -1434,3 +1517,7 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_m3exam(cot=cot)
     elif name == "m_mmlu":
         return benchmark_m_mmlu(cot=cot)
+    elif name == "mmlu_pro":
+        return benchmark_mmlu_pro(cot=cot)
+    elif name == "ethics":
+        return benchmark_ethics(cot=cot)
