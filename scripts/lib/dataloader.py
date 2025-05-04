@@ -1,3 +1,9 @@
+import os
+project_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+
+import sys
+sys.path.append(os.path.join(project_root_dir, "scripts/lib"))
+
 import pandas as pd
 import random
 from sklearn.metrics import accuracy_score, f1_score
@@ -5,12 +11,10 @@ from sklearn.model_selection import train_test_split
 from datasets import load_dataset
 from tqdm import tqdm
 import lib.utils
-import os
 import re
 import json
 from lib.eval.math_equivalence import is_equiv
 
-project_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv", 
             "arc": "./data/benchmark/arc/ARC-Challenge-Test.csv",
             "hellaswag": "./data/benchmark/hellaswag/hellaswag_train.jsonl",
