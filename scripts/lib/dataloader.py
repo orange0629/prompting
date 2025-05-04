@@ -8,6 +8,7 @@ import lib.utils
 import os
 import re
 import json
+from lib.eval.math_equivalence import is_equiv
 
 project_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv", 
@@ -38,7 +39,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "m3exam": "./data/benchmark/m3exam/m3exam.csv",
             "m_mmlu": "./data/benchmark/mmlu/m_mmlu.csv",
             "mmlu_pro": "./data/benchmark/mmlu_pro/mmlu_pro.jsonl",
-            "ethics": "./data/benchmark/ethics/ethics.csv"
+            "ethics": "./data/benchmark/ethics/ethics.csv",
+            "math500": "./data/benchmark/math500/math500.jsonl"
             }
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
@@ -57,6 +59,25 @@ QA_DEFAULT_USER_PROMPT = '{question_prompt}\nAt the very end, you **must** type 
 letter2num = {"A": 1, "B": 2, "C": 3, "D": 4, "Z": 5}
 # num2letter = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E"}
 num2letter = {i: chr(ord('A') + (i - 1)) for i in range(1, 11)}
+
+def extract_boxed_answer(text):
+    start_token = r"\boxed{"
+    start_idx = text.rfind(start_token)
+    if start_idx == -1:
+        return ''
+    i = start_idx + len(start_token)
+    brace_depth = 1
+    content = []
+    while i < len(text):
+        if text[i] == '{':
+            brace_depth += 1
+        elif text[i] == '}':
+            brace_depth -= 1
+            if brace_depth == 0:
+                break
+        content.append(text[i])
+        i += 1
+    return ''.join(content).strip() if brace_depth == 0 else ''
 
 class benchmark_base:
     def __init__(self, cot):
@@ -1460,7 +1481,41 @@ class benchmark_m_mmlu(benchmark_base):
 
         return metrics
     
+class benchmark_math500(benchmark_base):
+    def __init__(self, cot):
+        self.name = "math500"
+        self.data_df = pd.read_json(os.path.join(project_root_dir, data_dir[self.name]), lines=True)
+        self.cot = cot
 
+        self.question_list = list(self.data_df["problem"])
+        
+        self.true_label_list = list(self.data_df["answer"].apply(lambda x: str(x)))
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list = [extract_boxed_answer(tmp) for tmp in pred_text_list]
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+        
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            assert len(local_true_label_list) == len(pred_label_list)
+            correct_idx = []
+            for idx in range(len(local_true_label_list)):
+                if is_equiv(local_true_label_list[idx], pred_label_list[idx]):
+                    correct_idx.append(idx)
+                # If true answer start with special character
+            metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
+
+            if return_error_idx:
+                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+        return metrics
 
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
@@ -1521,3 +1576,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_mmlu_pro(cot=cot)
     elif name == "ethics":
         return benchmark_ethics(cot=cot)
+    elif name == "math500":
+        return benchmark_math500(cot=cot)
