@@ -1,0 +1,1 @@
+python multilingual_eval_saveoutput_v3.py --model_name "Qwen/Qwen2.5-7B-Instruct" --sys_lang "en" --task_lang "en" --benchmark "math500" --gpu_ids 0 1 --output_dir "/shared/3/projects/multilingual-system-prompting"

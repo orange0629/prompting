@@ -243,7 +243,9 @@ class benchmark_ethics(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list)}
             
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [
                     i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b
                 ]
 
@@ -289,7 +291,9 @@ class benchmark_mmlu_pro(benchmark_base):
                 local_true_label_list = [self.true_label_list[i] for i in eval_range]
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
         return metrics
 
 
@@ -327,7 +331,9 @@ class benchmark_mmlu(benchmark_base):
                     # f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -368,7 +374,9 @@ class benchmark_arc(benchmark_base):
                     # f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -407,7 +415,9 @@ class benchmark_hellaswag(benchmark_base):
                     # f"{self.name.upper()}_error": error_num}
             
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -457,7 +467,9 @@ class benchmark_truthfulqa(benchmark_base):
                     }
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = bleu_tmp["BLEU_error_idx"]
+                metrics["true_label_list"] = [self.correct_answer_list[i] for i in eval_range]
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = bleu_tmp["BLEU_error_idx"]
 
         return metrics
 
@@ -544,7 +556,9 @@ class benchmark_socket(benchmark_base):
             metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -584,7 +598,9 @@ class benchmark_hitom(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": 1 - len(error_idx)/len(local_true_label_list)}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = error_idx
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = error_idx
 
         return metrics
 
@@ -639,7 +655,9 @@ class benchmark_edos(benchmark_base):
             if self.task_type == "taska":
                 metrics = lib.utils.custom_f1_score(local_true_label_list, pred_label_list, self.name.upper())
                 if return_error_idx:
-                    metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                    metrics["true_label_list"] = local_true_label_list
+                    metrics["pred_label_list"] = pred_label_list
+                    metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
             elif self.task_type == "taskb":
                 classify_options = {"threats": "1. threats, plans to harm and incitement", "derogation": "2. derogation", "animosity": "3. animosity", "prejudiced discussions": "4. prejudiced discussions"}
                 for idx in range(len(pred_label_list)):
@@ -823,7 +841,9 @@ class benchmark_bbh(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
     
     def get_max_token_len(self):
@@ -868,7 +888,9 @@ class benchmark_brainteaser(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -910,7 +932,9 @@ class benchmark_gsm8k(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
 
 
@@ -944,7 +968,9 @@ class benchmark_timexnli(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(list(map(str, local_true_label_list)), list(map(str, pred_label_list)))}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
         return metrics
 
 
@@ -980,7 +1006,9 @@ class benchmark_winogrande(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1018,7 +1046,9 @@ class benchmark_tombench(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1052,7 +1082,9 @@ class benchmark_emobench(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1086,7 +1118,9 @@ class benchmark_commonsenseqa(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1122,7 +1156,9 @@ class benchmark_boolq(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(list(map(str, local_true_label_list)), list(map(str, pred_label_list)))}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1156,7 +1192,9 @@ class benchmark_bb_minute_mysteries_qa(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1189,7 +1227,9 @@ class benchmark_strategyqa(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(list(map(str, local_true_label_list)), list(map(str, pred_label_list)))}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1226,7 +1266,9 @@ class benchmark_musr(benchmark_base):
                     #f"{self.name.upper()}_error": error_num}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1261,7 +1303,9 @@ class benchmark_piqa(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1293,7 +1337,9 @@ class benchmark_riddlesense(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1335,7 +1381,9 @@ class benchmark_mgsm(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
 
 
@@ -1366,7 +1414,9 @@ class benchmark_belebele(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
     
@@ -1398,7 +1448,9 @@ class benchmark_xcopa(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
 
@@ -1450,7 +1502,9 @@ class benchmark_m3exam(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
 
 
@@ -1481,7 +1535,9 @@ class benchmark_m_mmlu(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
 
         return metrics
     
@@ -1518,7 +1574,9 @@ class benchmark_math500(benchmark_base):
             metrics = {f"{self.name.upper()}_acc": len(correct_idx)/len(local_true_label_list)}
 
             if return_error_idx:
-                metrics[f"{self.name.upper()}_error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
 
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
