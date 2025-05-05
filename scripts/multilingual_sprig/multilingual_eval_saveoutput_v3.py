@@ -159,7 +159,7 @@ def main():
                 with open(output_log_path, "a", encoding="utf-8") as f_log:
                     for i in range(len(q_list)):
                         f_log.write(json.dumps({
-                            "benchmark": benchmark_obj["benchmark_name"],
+                            "benchmark": benchmark_obj.name,
                             "system_prompt": system_prompt,
                             "question": q_list[i],
                             "full_input_prompt": input_prompts[(idx)*len(eval_range_lst[idx]):(idx+1)*len(eval_range_lst[idx])][i],
