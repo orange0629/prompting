@@ -55,19 +55,25 @@ class inference_model:
                                                         #quantization_config=quantization_config
                                                         )
     
-    def generate(self, answer_prompts, max_token_len, use_tqdm=False):
+    def generate(self, answer_prompts, max_token_len, use_tqdm=False, return_length=False):
         if self.use_vllm:
             outputs = self.model.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=max_token_len, temperature=0), use_tqdm=use_tqdm)
             outputs = [output.outputs[0].text for output in outputs]
+            outputs_length = [len(output.outputs[0].token_ids) for output in outputs]
         else:
             outputs = []
+            outputs_length = []
             for idx in tqdm(range(0, len(answer_prompts), self.BATCH_SIZE)):
                 ques_batch = answer_prompts[idx:(idx+self.BATCH_SIZE)]
                 ques_batch_tokenized = self.tokenizer(ques_batch, return_tensors='pt', truncation=True, max_length=512, padding=True)
                 answ_ids = self.model.generate(**ques_batch_tokenized.to('cuda'), max_new_tokens=max_token_len, pad_token_id=self.tokenizer.pad_token_id)
                 answ_ids = answ_ids[:, ques_batch_tokenized['input_ids'].shape[1]:] # Only consider new generated stuff
                 outputs.extend(self.tokenizer.batch_decode(answ_ids, skip_special_tokens=True))
-        return outputs
+                outputs_length.extend([len(answ_id) for answ_id in answ_ids])
+        if return_length:
+            return outputs, outputs_length
+        else:
+            return outputs
 
     def get_prompt_template(self):
         return llm_template_dict[self.model_type]

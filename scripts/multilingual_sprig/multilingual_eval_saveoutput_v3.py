@@ -39,7 +39,7 @@ def worker(gpu_id, task_queue, result_queue, model_name):
             break
         task_idx, task_data = task
         # print(f"{gpu_id} is processing data: {len(task_data)}")
-        full_outputs = model_obj.generate(task_data, max_token_len=4096)
+        full_outputs = model_obj.generate(task_data, max_token_len=4096, return_length=True)
         result_queue.put((task_idx, full_outputs))
         # print(f"{gpu_id} has finished processing data: {len(task_data)}")
 
@@ -146,7 +146,9 @@ def main():
             os.makedirs(os.path.dirname(output_log_path), exist_ok=True)
 
             for idx, system_prompt in enumerate(system_prompts):
-                outputs = full_outputs[(idx)*len(eval_range_lst[idx]):(idx+1)*len(eval_range_lst[idx])]
+                outputs_shard = full_outputs[(idx)*len(eval_range_lst[idx]):(idx+1)*len(eval_range_lst[idx])]
+                outputs = [tmp_output[0] for tmp_output in outputs_shard]
+                outputs_length = [tmp_output[1] for tmp_output in outputs_shard]
                 q_list = q_list_shared.copy()
                 eval_range = eval_range_shared
 
@@ -166,7 +168,8 @@ def main():
                             "model_output": outputs[i],
                             "pred_label": pred_label_list[i],
                             "ground_truth": ground_truth_list[i],
-                            "is_correct": is_correct_list[i]
+                            "is_correct": is_correct_list[i],
+                            "output_len": outputs_length[i],
                             # TODO: model_name, input/output lang, sys/task unique id
                         }, ensure_ascii=False) + "\n")
 
