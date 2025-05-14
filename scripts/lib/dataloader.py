@@ -522,7 +522,7 @@ class benchmark_socket(benchmark_base):
                                   }
         self.task_type = self.name[len("socket_"):]
         assert self.task_type in self.task_type_options
-        data = load_dataset('Blablablab/SOCKET',self.task_type, trust_remote_code=True)["sockette"]
+        data = load_dataset(os.path.join(project_root_dir, 'scripts/lib/SOCKET.py'),self.task_type, trust_remote_code=True)["sockette"]
         self.data_df = pd.DataFrame({"text": data["text"], "label": data["label"], "task_type": self.name})
 
         # Some benchmark labels are reversed
