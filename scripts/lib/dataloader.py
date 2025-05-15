@@ -44,7 +44,8 @@ data_dir = {"mmlu": "./data/benchmark/mmlu/mmlu_mingqian.csv",
             "m_mmlu": "./data/benchmark/mmlu/m_mmlu.csv",
             "mmlu_pro": "./data/benchmark/mmlu_pro/mmlu_pro.jsonl",
             "ethics": "./data/benchmark/ethics/ethics.csv",
-            "math500": "./data/benchmark/math500/math500.jsonl"
+            "math500": "./data/benchmark/math500/math500.jsonl",
+            "unimoral": "./data/benchmark/unimoral/unimoral.jsonl"
             }
 save_intermediate_dir = os.path.join(project_root_dir, "./results/benchmark")
 
@@ -1579,6 +1580,44 @@ class benchmark_math500(benchmark_base):
                 metrics["error_idx"] = [idx for idx in range(len(local_true_label_list)) if idx not in correct_idx]
         return metrics
 
+
+class benchmark_unimoral(benchmark_base):
+    def __init__(self, cot):
+        self.name = "unimoral"
+        self.data_df = pd.read_json(os.path.join(project_root_dir, data_dir[self.name]), lines=True)
+        self.cot = cot
+
+        self.question_list = []
+        for idx, item in self.data_df.iterrows():
+            q_text = f"Scenario: {item['Scenario'].strip()}\nA. {item['Possible_actions'][0]}\nB. {item['Possible_actions'][1]}\n"
+            self.question_list.append(q_text)
+        
+        self.true_label_list = list(self.data_df["Selected_action"])
+
+    def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
+        # Save raw prediction
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_text_list, "raw_"+save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        pred_label_list, error_num = self.result_list_preprocessing(pred_text_list, answer_identifier=answer_identifier, result_type="multiple_choice")
+        
+        if save_intermediate[0] in ["all", "raw"]: self.save_intermediate(pred_label_list, save_intermediate[1], save_intermediate[2], eval_range=eval_range)
+
+        metrics = {}
+        if save_intermediate[0] in ["all", "eval"]:
+            if eval_range is None:
+                local_true_label_list = self.true_label_list
+            else:
+                local_true_label_list = [self.true_label_list[i] for i in eval_range]
+            metrics = {f"{self.name.upper()}_acc": accuracy_score(local_true_label_list, pred_label_list),}
+
+            if return_error_idx:
+                metrics["true_label_list"] = local_true_label_list
+                metrics["pred_label_list"] = pred_label_list
+                metrics["error_idx"] = [i for i, (a, b) in enumerate(zip(local_true_label_list, pred_label_list)) if a != b]
+
+        return metrics
+
+
 def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
     if name == "mmlu":
         return benchmark_mmlu(cot=cot)
@@ -1640,3 +1679,5 @@ def init_benchmark(name="mmlu", cot=0) -> benchmark_base:
         return benchmark_ethics(cot=cot)
     elif name == "math500":
         return benchmark_math500(cot=cot)
+    elif name == "unimoral":
+        return benchmark_unimoral(cot=cot)
