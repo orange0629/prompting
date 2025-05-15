@@ -57,9 +57,9 @@ class inference_model:
     
     def generate(self, answer_prompts, max_token_len, use_tqdm=False, return_length=False):
         if self.use_vllm:
-            outputs = self.model.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=max_token_len, temperature=0), use_tqdm=use_tqdm)
-            outputs = [output.outputs[0].text for output in outputs]
-            outputs_length = [len(output.outputs[0].token_ids) for output in outputs]
+            vllm_outputs = self.model.generate(answer_prompts, sampling_params=SamplingParams(max_tokens=max_token_len, temperature=0), use_tqdm=use_tqdm)
+            outputs = [output.outputs[0].text for output in vllm_outputs]
+            outputs_length = [len(output.outputs[0].token_ids) for output in vllm_outputs]
         else:
             outputs = []
             outputs_length = []
