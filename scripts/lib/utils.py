@@ -239,3 +239,37 @@ def custom_f1_score(true_label_list, pred_label_list, model_name=""):
             #f"{model_name}_f1_no_error": f1_score(no_error_true_label_list, no_error_pred_label_list, zero_division=0.0),
             #f"{model_name}_error": error_num}
     return metrics
+
+
+import json
+from typing import Dict, List
+
+
+class MinMaxNormalizer:
+    def __init__(self, stats: Dict[str, tuple]):
+        self.stats = stats  # dict of {metric: (min, max)}
+
+    @classmethod
+    def from_data(cls, rows: List[Dict[str, float]], metric_cols: List[str]):
+        stats = {
+            m: (min(r[m] for r in rows), max(r[m] for r in rows))
+            for m in metric_cols
+        }
+        return cls(stats)
+
+    def normalize(self, metric: str, value: float) -> float:
+        vmin, vmax = self.stats[metric]
+        return 0.0 if vmax == vmin else (value - vmin) / (vmax - vmin)
+
+    def normalize_row(self, row: Dict[str, float]) -> Dict[str, float]:
+        return {m: self.normalize(m, row[m]) for m in self.stats}
+
+    def save(self, path: str):
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.stats, f, indent=2)
+
+    @classmethod
+    def load(cls, path: str):
+        with open(path, "r", encoding="utf-8") as f:
+            stats = json.load(f)
+        return cls(stats)

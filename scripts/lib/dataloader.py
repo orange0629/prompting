@@ -191,6 +191,13 @@ class benchmark_base:
             else:
                 rand_idx = random.sample(dev_indices, num_q)
                 return [self.question_list[i] for i in rand_idx], rand_idx
+        elif split == "train_small": # A temporary split for reducing translation cost
+            train_indices = train_indices[:1000]
+            if num_q is None:
+                return [self.question_list[i] for i in train_indices], train_indices
+            else:
+                rand_idx = random.sample(train_indices, num_q)
+                return [self.question_list[i] for i in rand_idx], rand_idx
 
     def eval_question_list(self, pred_text_list, save_intermediate=("all", "", ""), eval_range=None, return_error_idx=False, answer_identifier="Answer:"):
         return dict()
