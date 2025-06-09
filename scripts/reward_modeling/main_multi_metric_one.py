@@ -206,10 +206,26 @@ class PairwiseTrainer(Trainer):
         ignore_keys: Optional[List[str]] = None,
     ):
         with torch.no_grad():
-            loss = self.compute_loss(model, inputs)
+            loss, logits_dict = self.compute_loss(model, inputs, return_outputs=True)
         if prediction_loss_only:
             return (loss.detach(), None, None)
-        return (loss.detach(), None, None)
+        return (loss.detach(), logits_dict["rewards_a"] - logits_dict["rewards_b"], inputs["margin"])
+
+
+# ─────────────────────────────── metrics ────────────────────────────────────
+def compute_accuracy(eval_preds):
+    predictions, labels = eval_preds  # predictions.shape = (N, num_metrics)
+    predictions = predictions.astype(np.float32)
+    labels = labels.astype(np.float32)
+
+    acc_all = (np.sign(predictions) == np.sign(labels))
+    overall_acc = acc_all.mean()
+
+    metrics = {"overall_acc": overall_acc}
+    for i, m in enumerate(METRIC_COLS):
+        metrics[f"{m}_acc"] = acc_all[:, i].mean()
+
+    return metrics
 
 # ─────────────── tokenisation helper (returns dict) ─────────────────────────
 def make_tok_pair_fn(tokenizer: PreTrainedTokenizerBase, max_len: int):
@@ -293,8 +309,8 @@ def train_model(args):
         save_strategy="steps",
         save_steps=50,
         load_best_model_at_end=True,
-        metric_for_best_model="eval_loss",
-        greater_is_better=False,
+        metric_for_best_model="overall_acc",
+        greater_is_better=True,
         save_total_limit=2,
         gradient_accumulation_steps=4,
         gradient_checkpointing=True,
@@ -313,6 +329,7 @@ def train_model(args):
         train_dataset=train_ds,                            # already tokenised
         eval_dataset=dev_ds,
         data_collator=RewardDataCollatorWithPadding(tokenizer),
+        compute_metrics=compute_accuracy,
     )
 
     trainer.train()
