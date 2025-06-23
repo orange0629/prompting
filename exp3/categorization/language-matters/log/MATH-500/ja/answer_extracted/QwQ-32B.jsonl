@@ -1,0 +1,1000 @@
+{"answer_extracted": "(3, \u03c0/2)", "equality": true}
+{"answer_extracted": "p - q", "equality": true}
+{"answer_extracted": "14/3", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "\u30a8\u30d6\u30ea\u30f3", "equality": true}
+{"answer_extracted": "42 \u30a4\u30f3\u30c1", "equality": true}
+{"answer_extracted": "27", "equality": true}
+{"answer_extracted": "90", "equality": true}
+{"answer_extracted": "3\u221a13", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "2220", "equality": true}
+{"answer_extracted": "$\\frac{1}{9}$", "equality": false}
+{"answer_extracted": "284", "equality": true}
+{"answer_extracted": "5", "equality": true}
+{"answer_extracted": "\\sqrt{51}", "equality": true}
+{"answer_extracted": "$6 - 5i$", "equality": true}
+{"answer_extracted": "-50", "equality": true}
+{"answer_extracted": "\u03c0", "equality": true}
+{"answer_extracted": "62", "equality": false}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "$6 + 9i$", "equality": true}
+{"answer_extracted": "13535", "equality": true}
+{"answer_extracted": "\\dfrac{144}{19}", "equality": false}
+{"answer_extracted": "5", "equality": false}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "\\boxed{-2,1}", "equality": false}
+{"answer_extracted": "144", "equality": true}
+{"answer_extracted": "$3", "equality": false}
+{"answer_extracted": "$-2 + 7i$", "equality": true}
+{"answer_extracted": "225", "equality": true}
+{"answer_extracted": "$52_8", "equality": true}
+{"answer_extracted": "$11\\sqrt{2}$", "equality": true}
+{"answer_extracted": "720\u901a\u308a", "equality": true}
+{"answer_extracted": "$\\dfrac{243}{625}$", "equality": true}
+{"answer_extracted": "-125", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "3, 5, 7", "equality": true}
+{"answer_extracted": "72\u5ea6", "equality": true}
+{"answer_extracted": "2000\u30ab\u30ed\u30ea\u30fc", "equality": true}
+{"answer_extracted": "23", "equality": true}
+{"answer_extracted": "12 cm", "equality": true}
+{"answer_extracted": "17", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "70\\sqrt{2}", "equality": true}
+{"answer_extracted": "1.3", "equality": false}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "5", "equality": true}
+{"answer_extracted": "3/2", "equality": true}
+{"answer_extracted": "83", "equality": true}
+{"answer_extracted": "147", "equality": false}
+{"answer_extracted": "$x^5 - x^4 + x^3 - x^2 + x - 1", "equality": true}
+{"answer_extracted": "$12", "equality": true}
+{"answer_extracted": "$-\\frac{\\pi}{6}", "equality": true}
+{"answer_extracted": "0.15", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "11", "equality": true}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "$9901", "equality": true}
+{"answer_extracted": "5", "equality": true}
+{"answer_extracted": "(6, 31, -1)", "equality": true}
+{"answer_extracted": "-256", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "$\\frac{35}{64}$", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "x^3 + 3x - 6", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "46", "equality": true}
+{"answer_extracted": "-1", "equality": true}
+{"answer_extracted": "$40_9$", "equality": true}
+{"answer_extracted": "2516", "equality": false}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "$\\dfrac{3\\sqrt{3}}{4}$", "equality": true}
+{"answer_extracted": "\\(\\cot x\\)", "equality": true}
+{"answer_extracted": "\\dfrac{11}{36}", "equality": true}
+{"answer_extracted": "$0", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "$(-2, 1)", "equality": true}
+{"answer_extracted": "$2", "equality": true}
+{"answer_extracted": "501", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "\\dfrac{3}{2}", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "-1", "equality": true}
+{"answer_extracted": "\u221a5", "equality": true}
+{"answer_extracted": "240", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "\\(\\boxed{-1}\\), \\(\\boxed{0}\\), and \\(\\boxed{2}\\)", "equality": false}
+{"answer_extracted": "21", "equality": true}
+{"answer_extracted": "15", "equality": false}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "0.0287", "equality": true}
+{"answer_extracted": "33", "equality": true}
+{"answer_extracted": "80", "equality": true}
+{"answer_extracted": "-4", "equality": true}
+{"answer_extracted": "$1 + \\sqrt{19}, 1 - \\sqrt{19}", "equality": true}
+{"answer_extracted": "\u6771", "equality": false}
+{"answer_extracted": "$2k + 2", "equality": true}
+{"answer_extracted": "\\begin{pmatrix} -\\dfrac{1}{3} \\\\ \\dfrac{2}{3} \\\\ \\dfrac{5}{3} \\end{pmatrix}", "equality": true}
+{"answer_extracted": "145", "equality": true}
+{"answer_extracted": "850", "equality": true}
+{"answer_extracted": "(a + 5)(b + 2)", "equality": true}
+{"answer_extracted": "$(3, 4]$", "equality": false}
+{"answer_extracted": "40", "equality": true}
+{"answer_extracted": "29", "equality": true}
+{"answer_extracted": "$\\frac{4}{3}$", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "120", "equality": true}
+{"answer_extracted": "504", "equality": true}
+{"answer_extracted": "210", "equality": true}
+{"answer_extracted": "13", "equality": true}
+{"answer_extracted": "8000", "equality": true}
+{"answer_extracted": "-5", "equality": true}
+{"answer_extracted": "2,520\u901a\u308a", "equality": false}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "81", "equality": true}
+{"answer_extracted": "-9", "equality": true}
+{"answer_extracted": "\u5076\u6570", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "9\u4eba", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "\\dfrac{11}{2}", "equality": true}
+{"answer_extracted": "$-3", "equality": true}
+{"answer_extracted": "\\(\\dfrac{137 - 37539i}{18770}\\)", "equality": false}
+{"answer_extracted": "\\boxed{4210_5}", "equality": true}
+{"answer_extracted": "4\u30de\u30a4\u30eb", "equality": false}
+{"answer_extracted": "$\\dfrac{3840}{289}$", "equality": true}
+{"answer_extracted": "13", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "120\u00b0", "equality": true}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "64", "equality": true}
+{"answer_extracted": "204_5", "equality": true}
+{"answer_extracted": "1/3", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "13", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "28800", "equality": true}
+{"answer_extracted": "3\\sqrt{5}", "equality": true}
+{"answer_extracted": "(15, -29)", "equality": true}
+{"answer_extracted": "-2", "equality": true}
+{"answer_extracted": "$\\frac{\\sqrt{3}}{3}$", "equality": true}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "11", "equality": true}
+{"answer_extracted": "49\u6b73", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "144", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "\\dfrac{2}{21}", "equality": true}
+{"answer_extracted": "$2\\sqrt{29}", "equality": false}
+{"answer_extracted": "\\dfrac{1}{4}", "equality": true}
+{"answer_extracted": "30", "equality": true}
+{"answer_extracted": "\\dfrac{6}{5}", "equality": true}
+{"answer_extracted": "2107", "equality": true}
+{"answer_extracted": "3.21", "equality": true}
+{"answer_extracted": "18", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "$\\frac{17}{50}$", "equality": true}
+{"answer_extracted": "-\\dfrac{35}{9}", "equality": true}
+{"answer_extracted": "$-\\sqrt{3}", "equality": true}
+{"answer_extracted": "$\\frac{4}{9}$", "equality": true}
+{"answer_extracted": "$\\dfrac{270}{7}$", "equality": false}
+{"answer_extracted": "65 \u7acb\u65b9\u5358\u4f4d\u3002", "equality": true}
+{"answer_extracted": "12", "equality": false}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "1736", "equality": true}
+{"answer_extracted": "$\\dfrac{13}{15}$", "equality": true}
+{"answer_extracted": "350", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "0.0000672", "equality": true}
+{"answer_extracted": "30", "equality": true}
+{"answer_extracted": "60", "equality": true}
+{"answer_extracted": "5x - 7y + 11z + 4 = 0", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "\\dfrac{\\sqrt{3}}{3}", "equality": true}
+{"answer_extracted": "1251\u4eba", "equality": true}
+{"answer_extracted": "23", "equality": true}
+{"answer_extracted": "(2, \u221e)", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "7", "equality": true}
+{"answer_extracted": "7\u679a", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "160", "equality": true}
+{"answer_extracted": "13/18", "equality": true}
+{"answer_extracted": "$0$", "equality": true}
+{"answer_extracted": "$30", "equality": true}
+{"answer_extracted": "0, 1, 2, \u307e\u305f\u306f 3", "equality": false}
+{"answer_extracted": "\\dfrac{1}{4}", "equality": true}
+{"answer_extracted": "24", "equality": true}
+{"answer_extracted": "1600", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "10080", "equality": true}
+{"answer_extracted": "17", "equality": true}
+{"answer_extracted": "40 daps", "equality": true}
+{"answer_extracted": "66", "equality": true}
+{"answer_extracted": "1", "equality": false}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "16", "equality": false}
+{"answer_extracted": "\\begin{pmatrix} -2 \\\\ -14 \\\\ -7 \\end{pmatrix}", "equality": true}
+{"answer_extracted": "(3/2, -13)", "equality": true}
+{"answer_extracted": "28", "equality": true}
+{"answer_extracted": "60", "equality": false}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "5", "equality": true}
+{"answer_extracted": "56", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "110", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "6 Trinkets", "equality": true}
+{"answer_extracted": "11111111100", "equality": true}
+{"answer_extracted": "(-1, 6)", "equality": true}
+{"answer_extracted": "\\dfrac{1}{2}", "equality": true}
+{"answer_extracted": "\\dfrac{16}{27}", "equality": true}
+{"answer_extracted": "900", "equality": true}
+{"answer_extracted": "54", "equality": true}
+{"answer_extracted": "14", "equality": true}
+{"answer_extracted": "$\\dfrac{9}{256}$", "equality": true}
+{"answer_extracted": "11", "equality": true}
+{"answer_extracted": "3\u901a\u308a", "equality": true}
+{"answer_extracted": "C", "equality": true}
+{"answer_extracted": "288\\pi", "equality": true}
+{"answer_extracted": "90\u901a\u308a", "equality": true}
+{"answer_extracted": "\\dfrac{16}{5}", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "\\dfrac{1997}{2}", "equality": true}
+{"answer_extracted": "30", "equality": true}
+{"answer_extracted": "34", "equality": true}
+{"answer_extracted": "$\\dfrac{5}{9}$", "equality": true}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "22", "equality": true}
+{"answer_extracted": "-4", "equality": true}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "154", "equality": false}
+{"answer_extracted": "17", "equality": true}
+{"answer_extracted": "32,348\u30c9\u30eb", "equality": true}
+{"answer_extracted": "3 \u5358\u4f4d", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "-13x + 3", "equality": true}
+{"answer_extracted": "8\u54c1", "equality": true}
+{"answer_extracted": "$\\dfrac{10}{11}$", "equality": true}
+{"answer_extracted": "\\begin{pmatrix} -1 & 0 \\\\ 0 & -1 \\end{pmatrix}", "equality": true}
+{"answer_extracted": "1", "equality": false}
+{"answer_extracted": "13", "equality": true}
+{"answer_extracted": "120", "equality": false}
+{"answer_extracted": "81", "equality": true}
+{"answer_extracted": "1/8", "equality": true}
+{"answer_extracted": "28", "equality": true}
+{"answer_extracted": "E", "equality": true}
+{"answer_extracted": "\\dfrac{8}{21}", "equality": true}
+{"answer_extracted": "864\u5e73\u65b9\u30a4\u30f3\u30c1", "equality": true}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "22", "equality": true}
+{"answer_extracted": "$120", "equality": true}
+{"answer_extracted": "76", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "15", "equality": true}
+{"answer_extracted": "1", "equality": false}
+{"answer_extracted": "4005", "equality": true}
+{"answer_extracted": "33/100", "equality": true}
+{"answer_extracted": "180", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "6\u901a\u308a", "equality": true}
+{"answer_extracted": "$10", "equality": true}
+{"answer_extracted": "333", "equality": true}
+{"answer_extracted": "1030", "equality": true}
+{"answer_extracted": "$1250", "equality": true}
+{"answer_extracted": "18 + 2\\pi", "equality": true}
+{"answer_extracted": "7", "equality": true}
+{"answer_extracted": "11", "equality": true}
+{"answer_extracted": "\\(\\sqrt{53}\\)", "equality": true}
+{"answer_extracted": "255", "equality": true}
+{"answer_extracted": "7\u03c0", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "36", "equality": true}
+{"answer_extracted": "129", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "\\boxed{3 + 2\\sqrt{2}, 3 - 2\\sqrt{2}, -3 + 2\\sqrt{2}, -3 - 2\\sqrt{2}}", "equality": true}
+{"answer_extracted": "2", "equality": false}
+{"answer_extracted": "$\\dfrac{17}{21}$", "equality": true}
+{"answer_extracted": "36", "equality": true}
+{"answer_extracted": "7", "equality": true}
+{"answer_extracted": "16", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "63", "equality": true}
+{"answer_extracted": "898", "equality": true}
+{"answer_extracted": "\\(\\left( \\frac{3}{5}, \\frac{8}{3} \\right]\\)", "equality": true}
+{"answer_extracted": "58", "equality": true}
+{"answer_extracted": "11", "equality": true}
+{"answer_extracted": "B", "equality": true}
+{"answer_extracted": "103", "equality": true}
+{"answer_extracted": "\\begin{pmatrix} -18 \\\\ -49 \\\\ 96 \\end{pmatrix}", "equality": true}
+{"answer_extracted": "63", "equality": true}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "5.3", "equality": false}
+{"answer_extracted": "5", "equality": true}
+{"answer_extracted": "28", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "$\\dfrac{9}{19}$", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "$(-\\infty, 0]", "equality": true}
+{"answer_extracted": "1 + \\sqrt{3}", "equality": false}
+{"answer_extracted": "14", "equality": true}
+{"answer_extracted": "49", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "(5, \u221e)", "equality": true}
+{"answer_extracted": "12\u03c0", "equality": true}
+{"answer_extracted": "(2, 4)", "equality": true}
+{"answer_extracted": "15", "equality": false}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "0", "equality": true}
+{"answer_extracted": "$\\frac{9a + 11}{20}$", "equality": true}
+{"answer_extracted": "-128", "equality": true}
+{"answer_extracted": "$-\\dfrac{24}{25}", "equality": true}
+{"answer_extracted": "10\u30e1\u30fc\u30c8\u30eb", "equality": true}
+{"answer_extracted": "-1", "equality": true}
+{"answer_extracted": "\\dfrac{1}{3}", "equality": true}
+{"answer_extracted": "150", "equality": false}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "\\dfrac{9}{100}", "equality": true}
+{"answer_extracted": "15", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "4 \u30a4\u30f3\u30c1", "equality": true}
+{"answer_extracted": "1940", "equality": true}
+{"answer_extracted": "$\\dfrac{13}{6}$", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "-120", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "26000", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "4343_6", "equality": true}
+{"answer_extracted": "$2k", "equality": true}
+{"answer_extracted": "67\u00b0", "equality": false}
+{"answer_extracted": "-2", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "58500", "equality": true}
+{"answer_extracted": "None", "equality": false}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "66", "equality": true}
+{"answer_extracted": "$6r^2 - 4r - 24$", "equality": true}
+{"answer_extracted": "4495", "equality": true}
+{"answer_extracted": "10080", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "\\dfrac{1}{16}", "equality": true}
+{"answer_extracted": "11(\\sqrt{5} + 1)", "equality": true}
+{"answer_extracted": "480", "equality": true}
+{"answer_extracted": "81", "equality": true}
+{"answer_extracted": "100", "equality": true}
+{"answer_extracted": "\\boxed{-4}", "equality": false}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "\u6955\u5186", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "$\\frac{7}{4}$", "equality": true}
+{"answer_extracted": "16\\sqrt{3}", "equality": true}
+{"answer_extracted": "\\(\\boxed{\\dfrac{1}{4}}\\)", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "(1, -16, -4, 43)", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "31", "equality": true}
+{"answer_extracted": "189 \u5e73\u65b9\u30bb\u30f3\u30c1\u30e1\u30fc\u30c8\u30eb", "equality": false}
+{"answer_extracted": "-41", "equality": true}
+{"answer_extracted": "17", "equality": true}
+{"answer_extracted": "90", "equality": true}
+{"answer_extracted": "1 + 2i", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "25", "equality": true}
+{"answer_extracted": "(8, -2)", "equality": true}
+{"answer_extracted": "6", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "12th \u30b0\u30ec\u30fc\u30c9", "equality": true}
+{"answer_extracted": "(0, 9) \\cup (9, 36)", "equality": true}
+{"answer_extracted": "\\dfrac{1}{2}", "equality": true}
+{"answer_extracted": "\\dfrac{20000}{\\pi}", "equality": true}
+{"answer_extracted": "[-2, 7]", "equality": false}
+{"answer_extracted": "15x - 80", "equality": true}
+{"answer_extracted": "1", "equality": false}
+{"answer_extracted": "11", "equality": true}
+{"answer_extracted": "18", "equality": true}
+{"answer_extracted": "\\dfrac{11}{2}", "equality": true}
+{"answer_extracted": "\\dfrac{\\sqrt{21}}{5}", "equality": true}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "0", "equality": true}
+{"answer_extracted": "$\\sqrt{66}$", "equality": true}
+{"answer_extracted": "3/4", "equality": true}
+{"answer_extracted": "$-\\dfrac{3}{8}", "equality": true}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "23", "equality": true}
+{"answer_extracted": "\u30ca\u30d3\u30f3", "equality": false}
+{"answer_extracted": "326.5", "equality": true}
+{"answer_extracted": "7", "equality": false}
+{"answer_extracted": "\\dfrac{13}{4}", "equality": true}
+{"answer_extracted": "-9 + 2i", "equality": false}
+{"answer_extracted": "$3", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "60\u901a\u308a", "equality": true}
+{"answer_extracted": "0", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "$\\begin{pmatrix} \\dfrac{1}{5} \\\\ -\\dfrac{18}{5} \\end{pmatrix}$", "equality": true}
+{"answer_extracted": "2\\sqrt{5}", "equality": true}
+{"answer_extracted": "3, 6, 9", "equality": false}
+{"answer_extracted": "6", "equality": false}
+{"answer_extracted": "$406", "equality": true}
+{"answer_extracted": "$5r^5$", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "$\\frac{1}{8}$", "equality": true}
+{"answer_extracted": "-2", "equality": true}
+{"answer_extracted": "$2\\sqrt{5}", "equality": true}
+{"answer_extracted": "\\begin{pmatrix} -7 \\\\ 16 \\\\ 5 \\end{pmatrix}", "equality": true}
+{"answer_extracted": "$\\boxed{\\begin{pmatrix}\\dfrac{16}{49} \\\\ \\dfrac{48}{49} \\\\ \\dfrac{24}{49}\\end{pmatrix}}$", "equality": true}
+{"answer_extracted": "27", "equality": true}
+{"answer_extracted": "$x^3 - 8x - 8 = 0", "equality": false}
+{"answer_extracted": "1440", "equality": true}
+{"answer_extracted": "600", "equality": true}
+{"answer_extracted": "$3R^2", "equality": true}
+{"answer_extracted": "6\\sqrt{2}", "equality": true}
+{"answer_extracted": "29 cents", "equality": true}
+{"answer_extracted": "64", "equality": true}
+{"answer_extracted": "50", "equality": true}
+{"answer_extracted": "4.5", "equality": true}
+{"answer_extracted": "$\\left[ \\dfrac{\\pi^2}{8}, \\dfrac{5\\pi^2}{4} \\right]$", "equality": true}
+{"answer_extracted": "331", "equality": true}
+{"answer_extracted": "0.35625", "equality": true}
+{"answer_extracted": "32", "equality": true}
+{"answer_extracted": "(-\\infty, 2) \u222a (3, \u221e)", "equality": true}
+{"answer_extracted": "$4", "equality": true}
+{"answer_extracted": "2", "equality": false}
+{"answer_extracted": "4", "equality": true}
+{"answer_extracted": "$x^8 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2 + x + 1", "equality": true}
+{"answer_extracted": "14", "equality": true}
+{"answer_extracted": "550 \u30ac\u30ed\u30f3", "equality": true}
+{"answer_extracted": "256", "equality": true}
+{"answer_extracted": "45", "equality": true}
+{"answer_extracted": "\\dfrac{1}{2}", "equality": true}
+{"answer_extracted": "15", "equality": true}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "9", "equality": true}
+{"answer_extracted": "44", "equality": true}
+{"answer_extracted": "47", "equality": true}
+{"answer_extracted": "64", "equality": true}
+{"answer_extracted": "\\dfrac{639}{40}", "equality": true}
+{"answer_extracted": "143", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "y = 2x + 3", "equality": true}
+{"answer_extracted": "6 \u7a2e\u985e", "equality": true}
+{"answer_extracted": "1,-2", "equality": false}
+{"answer_extracted": "0", "equality": true}
+{"answer_extracted": "41", "equality": true}
+{"answer_extracted": "$18.90", "equality": true}
+{"answer_extracted": "$105", "equality": false}
+{"answer_extracted": "12", "equality": true}
+{"answer_extracted": "59", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "2.09", "equality": false}
+{"answer_extracted": "121", "equality": true}
+{"answer_extracted": "8\\pi", "equality": true}
+{"answer_extracted": "15", "equality": false}
+{"answer_extracted": "8", "equality": true}
+{"answer_extracted": "$25", "equality": true}
+{"answer_extracted": "27648", "equality": true}
+{"answer_extracted": "84\u70b9", "equality": true}
+{"answer_extracted": "137\\frac{1}{2}", "equality": true}
+{"answer_extracted": "7", "equality": true}
+{"answer_extracted": "3", "equality": true}
+{"answer_extracted": "29", "equality": true}
+{"answer_extracted": "200\u30d5\u30a3\u30fc\u30c8", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "$\\dfrac{2}{1005}$", "equality": true}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "1", "equality": true}
+{"answer_extracted": "41", "equality": false}
+{"answer_extracted": "202", "equality": true}
+{"answer_extracted": "\\dfrac{8}{15}", "equality": true}
+{"answer_extracted": "10", "equality": true}
+{"answer_extracted": "13", "equality": true}
+{"answer_extracted": "54 + 30\\sqrt{3}", "equality": false}
+{"answer_extracted": "2", "equality": true}
+{"answer_extracted": "$36", "equality": true}
+{"answer_extracted": "15, 30 - \\dfrac{15}{p}, 2p^2 - p", "equality": false}
+{"answer_extracted": "14", "equality": true}
+{"answer_extracted": "64", "equality": true}
+{"answer_extracted": "y = -2x", "equality": true}
+{"answer_extracted": "20", "equality": true}
+{"answer_extracted": "\\(\\frac{1}{4}\\)", "equality": true}
+{"answer_extracted": "(2, 12) \u222a (12, 102)", "equality": true}
+{"answer_extracted": "\\dfrac{5}{13}", "equality": true}
+{"answer_extracted": "\\(\\dfrac{7}{2}\\)", "equality": true}
+{"answer_extracted": "-1", "equality": true}
+{"answer_extracted": "106", "equality": true}
+{"answer_extracted": "(3, \u03c0/2)", "equality": true, "output_hash": "58f37f94c455127400eab35b19737f66"}
+{"answer_extracted": "p - q", "equality": true, "output_hash": "2592b72d947722513d79407ab5066c43"}
+{"answer_extracted": "14/3", "equality": true, "output_hash": "d5f9908ccdc1ebeddbf91c2a5dc653cc"}
+{"answer_extracted": "9", "equality": true, "output_hash": "b79f8a72dc91ac65c0a1f9a1c3ace901"}
+{"answer_extracted": "\u30a8\u30d6\u30ea\u30f3", "equality": false, "output_hash": "90d215d6fdf1670cd415b139b178ec91"}
+{"answer_extracted": "42 \u30a4\u30f3\u30c1", "equality": true, "output_hash": "074dd706806d24eb3553b30931bbe6eb"}
+{"answer_extracted": "27", "equality": true, "output_hash": "1f8884454bb6e812eb1f19e6e0231108"}
+{"answer_extracted": "90", "equality": true, "output_hash": "b0fec12bd926d1c41aa67ad0d91b6f56"}
+{"answer_extracted": "3\u221a13", "equality": true, "output_hash": "db2c24d782df677d9830878e4b288cdb"}
+{"answer_extracted": "4", "equality": true, "output_hash": "86600e4cd2928d6e193a148404dad606"}
+{"answer_extracted": "2220", "equality": true, "output_hash": "d27fbdb55d32f09de0a513dfdbcfc934"}
+{"answer_extracted": "\\dfrac{1}{9}", "equality": false, "output_hash": "e23faad440c3db195a61ae06ee845433"}
+{"answer_extracted": "284", "equality": true, "output_hash": "6c6303ce14666755bf32e081912b5476"}
+{"answer_extracted": "5", "equality": true, "output_hash": "d9db324111e18c2bad82ab485568f449"}
+{"answer_extracted": "$\\sqrt{51}$", "equality": true, "output_hash": "4d49de20d57c6bb2bb9631388bcbb08f"}
+{"answer_extracted": "$6 - 5i", "equality": true, "output_hash": "53480e2a270fc9e3a8c291f71980bbc8"}
+{"answer_extracted": "-50", "equality": true, "output_hash": "55fe02a6361c9c132a03c31bb9739777"}
+{"answer_extracted": "\u03c0", "equality": true, "output_hash": "ca696fa807f32d794baa42eb787d360f"}
+{"answer_extracted": "62", "equality": false, "output_hash": "512b1c076c67679019773515347757f4"}
+{"answer_extracted": "3", "equality": true, "output_hash": "029f95bcec7dc1b7518352db017ae596"}
+{"answer_extracted": "$6 + 9i$", "equality": true, "output_hash": "05c354ea455e0f1c43a4d45bdee9cbd8"}
+{"answer_extracted": "13535", "equality": true, "output_hash": "e001e5230ddf5004dd9c4c14a20d4184"}
+{"answer_extracted": "\\frac{144}{19}", "equality": false, "output_hash": "e78924b0aa970b2fcbeaf1248e5b5c27"}
+{"answer_extracted": "5", "equality": false, "output_hash": "e79a846c992432556dcbdd6eb3808789"}
+{"answer_extracted": "10", "equality": true, "output_hash": "aff7fac51c4d77fa032e32cf959b343b"}
+{"answer_extracted": "-2,1", "equality": false, "output_hash": "7206074007e5cdc751e11e15580f4b8c"}
+{"answer_extracted": "144", "equality": true, "output_hash": "493f30c5fbca54122db1b95e32c4aa28"}
+{"answer_extracted": "$3", "equality": false, "output_hash": "760c41ae5e3d7a0c6c5eeb220af4e0b3"}
+{"answer_extracted": "$-2 + 7i$", "equality": true, "output_hash": "04e6cceb23d0b9c1a884c5c75ded578c"}
+{"answer_extracted": "225", "equality": true, "output_hash": "70c6bc66c7a1eb533e8e4ee658e6421d"}
+{"answer_extracted": "$52_8", "equality": true, "output_hash": "3dbb15fa313b828813686d7fc2838ff5"}
+{"answer_extracted": "$11\\sqrt{2}$", "equality": true, "output_hash": "b7204749eaefe92c778588daa77469eb"}
+{"answer_extracted": "720\u901a\u308a", "equality": true, "output_hash": "8d2fe8dafebb0bb5563c306993c7d671"}
+{"answer_extracted": "$\\dfrac{243}{625}$", "equality": true, "output_hash": "9d45c1244447065b3b2c60cd53402272"}
+{"answer_extracted": "-125", "equality": true, "output_hash": "b8dd0274869d0fcb524ef7ddc19da917"}
+{"answer_extracted": "3", "equality": true, "output_hash": "0cf27c1fd794c6852ab57fe148f39225"}
+{"answer_extracted": "3, 5, 7", "equality": true, "output_hash": "c718bbd5431ecb2a883c8c38e9fe4293"}
+{"answer_extracted": "72\u5ea6", "equality": true, "output_hash": "a600de34a3df6d344f49f4b8c0663d20"}
+{"answer_extracted": "2000\u30ab\u30ed\u30ea\u30fc", "equality": true, "output_hash": "c05c41861c52256fe301662836ce6d11"}
+{"answer_extracted": "23", "equality": true, "output_hash": "c71d970dbcbbb1e3c87a9303df493968"}
+{"answer_extracted": "12 cm", "equality": true, "output_hash": "2a325430e6077df4b5e494279b16a9cd"}
+{"answer_extracted": "17", "equality": true, "output_hash": "e5fd6e7ea9b2b757f1d38594b8fa029d"}
+{"answer_extracted": "4", "equality": true, "output_hash": "b37ef19558c247b962db15a112cde347"}
+{"answer_extracted": "$70\\sqrt{2}", "equality": true, "output_hash": "d13da128a0ba6f8cc4f22ec936d5f586"}
+{"answer_extracted": "1.3", "equality": false, "output_hash": "01b01b32fca768817ad720d8cfe73797"}
+{"answer_extracted": "2", "equality": true, "output_hash": "0ca87da4354f175cbbb2ee3fc53cbe3d"}
+{"answer_extracted": "6", "equality": true, "output_hash": "4212658ba6175ea35352e140e9d91fa1"}
+{"answer_extracted": "5", "equality": true, "output_hash": "dcbf59ec1bb47c954f779624555ed8db"}
+{"answer_extracted": "3/2", "equality": true, "output_hash": "ec7b58576eb0258c056c26de9e4e524c"}
+{"answer_extracted": "83", "equality": true, "output_hash": "e19ff3963b0b2f81c9f7ad09fea5cffa"}
+{"answer_extracted": "147", "equality": false, "output_hash": "2a5d7f9652900f97feb4622a4bf4c77d"}
+{"answer_extracted": "$x^5 - x^4 + x^3 - x^2 + x - 1", "equality": true, "output_hash": "abdefceea52a67e12149b98552c9c156"}
+{"answer_extracted": "$12", "equality": true, "output_hash": "eadc797df62fb816f678dd7fb16af5b5"}
+{"answer_extracted": "$-\\frac{\\pi}{6}", "equality": true, "output_hash": "9b46310bd76790160413d57bc00fbf98"}
+{"answer_extracted": "0.15", "equality": true, "output_hash": "f8cd4628f7e37d9077e5e745b6e384d2"}
+{"answer_extracted": "3", "equality": true, "output_hash": "75c975de99e68c5a31cb15c24d6abb6a"}
+{"answer_extracted": "11", "equality": true, "output_hash": "d190ee581d2918c261e41e9eb41515d7"}
+{"answer_extracted": "16", "equality": true, "output_hash": "dcdaac42253c40e7d9dbd3e5388bc7ff"}
+{"answer_extracted": "$9901", "equality": true, "output_hash": "6fce29a57d92ac2c3759552b415ab678"}
+{"answer_extracted": "5", "equality": true, "output_hash": "ec3305a76097e2ef498b653857d6743a"}
+{"answer_extracted": "(6, 31, -1)", "equality": true, "output_hash": "829974eb95c6edd86fabfe3a78cf95f6"}
+{"answer_extracted": "-256", "equality": true, "output_hash": "5b7ec9d482f0f6966d94183cc09fce0a"}
+{"answer_extracted": "4", "equality": true, "output_hash": "d2e5a767c75688bc66d11e5e6d893c20"}
+{"answer_extracted": "10", "equality": true, "output_hash": "95616d5b400276fa5da779b4d47fca7c"}
+{"answer_extracted": "$\\frac{35}{64}$", "equality": true, "output_hash": "8ed4038c7946868a9e3e05a3886244ce"}
+{"answer_extracted": "1", "equality": true, "output_hash": "e6260c8564e3e54c5f05e7124fb60154"}
+{"answer_extracted": "x^3 + 3x - 6", "equality": true, "output_hash": "eba1cbbd6d2843fefed88c8f2f0f9af3"}
+{"answer_extracted": "10", "equality": true, "output_hash": "154e9d3f650c388219b1752668e922b6"}
+{"answer_extracted": "46", "equality": true, "output_hash": "80a97275dbcb1106f840cfe4e1409d27"}
+{"answer_extracted": "-1", "equality": true, "output_hash": "ae23f9f725e2593f3a0731f0ab9c17a5"}
+{"answer_extracted": "$40_9$", "equality": true, "output_hash": "e2c17e922382717490c52d61dad75ac7"}
+{"answer_extracted": "2516", "equality": false, "output_hash": "02cc967642468079eb914d5f838291a2"}
+{"answer_extracted": "3", "equality": true, "output_hash": "b9b6bec1e1cd6518a11eed3ae7d321c8"}
+{"answer_extracted": "$\\dfrac{3\\sqrt{3}}{4}$", "equality": true, "output_hash": "6b2977edeba4abcde0fcdd252d548a41"}
+{"answer_extracted": "\\(\\cot x\\)", "equality": true, "output_hash": "bdeb3dae54cfb8de61606b73b40c3bfe"}
+{"answer_extracted": "\\dfrac{11}{36}", "equality": true, "output_hash": "1b10e8cab5f942980c9a81a116e95b7b"}
+{"answer_extracted": "$0", "equality": true, "output_hash": "abd5d2fecf6d872ca4c77f517389e8ca"}
+{"answer_extracted": "$4", "equality": true, "output_hash": "2d7b894e2fc9711842a85b8aa2f58cac"}
+{"answer_extracted": "$(-2, 1)", "equality": true, "output_hash": "0bcec1a211569c6e8a2c6471c958b052"}
+{"answer_extracted": "$2", "equality": true, "output_hash": "17d84f80bebdc34304630cb7f516a781"}
+{"answer_extracted": "501", "equality": true, "output_hash": "4ecee2cae1fac47076bcf52bb014068f"}
+{"answer_extracted": "3", "equality": true, "output_hash": "f6442759b63f4f47358f14ea0203ba72"}
+{"answer_extracted": "\\dfrac{3}{2}", "equality": true, "output_hash": "c8ddd30c60b1ffd101717358588b640d"}
+{"answer_extracted": "2", "equality": true, "output_hash": "99554b84a26c84a305b944ad8b607017"}
+{"answer_extracted": "-1", "equality": true, "output_hash": "d30948918f0a989962b1e6a8ea1dcdc5"}
+{"answer_extracted": "\u221a5", "equality": true, "output_hash": "75b9965bfa8b970ae6973bf32018ff97"}
+{"answer_extracted": "240", "equality": true, "output_hash": "53c71ca4861cbbb4213f60bb892cd50f"}
+{"answer_extracted": "1", "equality": true, "output_hash": "e12615f91b1a97599339f377c8e493da"}
+{"answer_extracted": "\\(\\boxed{-1}\\), \\(\\boxed{0}\\), and \\(\\boxed{2}\\)", "equality": false, "output_hash": "69eb755279f523b834d9046091a6f32d"}
+{"answer_extracted": "21", "equality": true, "output_hash": "65933847192c04d87f71ab0e04f3053c"}
+{"answer_extracted": "15", "equality": false, "output_hash": "beb9f80ff620958b0eb1d58027fb8cff"}
+{"answer_extracted": "1", "equality": true, "output_hash": "0fcb3fce265ec465bebf5c32d1582073"}
+{"answer_extracted": "0.0287", "equality": true, "output_hash": "3c7fef15917c9cfd38d1ea9da6fd11af"}
+{"answer_extracted": "33", "equality": true, "output_hash": "9ad27262cbd4101d656eff10a4554f71"}
+{"answer_extracted": "80", "equality": true, "output_hash": "02e082ea7c5ca6be345fc0b616316474"}
+{"answer_extracted": "-4", "equality": true, "output_hash": "3d57dae639adaa735734d72eb843628c"}
+{"answer_extracted": "$1 + \\sqrt{19}, 1 - \\sqrt{19}$", "equality": true, "output_hash": "a9a9ed908e5d8640e571222563a3103f"}
+{"answer_extracted": "\u6771", "equality": false, "output_hash": "2c6acc73ba933d92f223b880cd711352"}
+{"answer_extracted": "$2k + 2", "equality": true, "output_hash": "803d33b4753280dba2395e0fc28c127d"}
+{"answer_extracted": "\\begin{pmatrix} -\\dfrac{1}{3} \\\\ \\dfrac{2}{3} \\\\ \\dfrac{5}{3} \\end{pmatrix}", "equality": true, "output_hash": "69e4c85902f7e68f26794c6dbed3f7b3"}
+{"answer_extracted": "145", "equality": true, "output_hash": "455400a0a81a5163315775f5a9352b6e"}
+{"answer_extracted": "850", "equality": true, "output_hash": "0e29c8a80ce4a6a5ada4fcb4687ee607"}
+{"answer_extracted": "(a + 5)(b + 2)", "equality": true, "output_hash": "66111433cf85b8924c8adfdd98ed48b1"}
+{"answer_extracted": "$(3, 4]$", "equality": false, "output_hash": "aba760f8440684eedb8266eccd2326d0"}
+{"answer_extracted": "40", "equality": true, "output_hash": "e68c4e195d80adb32a1353442ab2f160"}
+{"answer_extracted": "29", "equality": true, "output_hash": "18489a7a0d8d9cd5835941648978ef1b"}
+{"answer_extracted": "$\\frac{4}{3}$", "equality": true, "output_hash": "3e84e8085e00925621cae8284390b1b7"}
+{"answer_extracted": "9", "equality": true, "output_hash": "c2ddad947dfb285215bc44cf62e1153b"}
+{"answer_extracted": "2", "equality": true, "output_hash": "45c76dc0a02b3d1d5eb8d6a6ee71b9a4"}
+{"answer_extracted": "120", "equality": true, "output_hash": "d1bca8d6adbeea7a1ad821dbe2e3dc5f"}
+{"answer_extracted": "504", "equality": true, "output_hash": "c8fa0fdac78a35904eed36eec5aecd3f"}
+{"answer_extracted": "210", "equality": true, "output_hash": "6cb682ebc84be93d87c9b28483a4474a"}
+{"answer_extracted": "13", "equality": true, "output_hash": "038058329325567d986b5a168baae461"}
+{"answer_extracted": "8000", "equality": true, "output_hash": "7122df62dada845b3e3cc5d5a8d4e24d"}
+{"answer_extracted": "-5", "equality": true, "output_hash": "d045d3e16b8acf786be3fe830659cabb"}
+{"answer_extracted": "2,520\u901a\u308a", "equality": false, "output_hash": "797db5a0efbb803e5669f178176731c4"}
+{"answer_extracted": "2", "equality": true, "output_hash": "a458fa557ed8ad5b08c683a5c3d6c9d2"}
+{"answer_extracted": "3", "equality": true, "output_hash": "1c4fd2fa54f4eb3f6de415500bfcc20e"}
+{"answer_extracted": "81", "equality": true, "output_hash": "5126969ceeb1144f8bdcc157e91e2256"}
+{"answer_extracted": "-9", "equality": true, "output_hash": "c040c5356887b4ecf4f52f3a1608020c"}
+{"answer_extracted": "\u5076\u6570", "equality": true, "output_hash": "6a8d668448a335c2ed72e74e3e066a6f"}
+{"answer_extracted": "6", "equality": true, "output_hash": "3438528711dc0b9a39c66889b2e6b953"}
+{"answer_extracted": "9\u4eba", "equality": true, "output_hash": "bc71706df8ef6c4b0fe22ecd4273b69f"}
+{"answer_extracted": "8", "equality": true, "output_hash": "93faddce091ff7d527de7037002f0b73"}
+{"answer_extracted": "\\dfrac{11}{2}", "equality": true, "output_hash": "1c15aa59b74c30841c82897f846c8c00"}
+{"answer_extracted": "$-3", "equality": true, "output_hash": "41c704014c3e83ce1c3c7fd3a930c638"}
+{"answer_extracted": "\\dfrac{137 - 37539i}{18770}", "equality": false, "output_hash": "39a37fca2e70502d177ac8edd40546c1"}
+{"answer_extracted": "\\boxed{4210_5}", "equality": true, "output_hash": "494f21f90545e93aab60c98772ef06e9"}
+{"answer_extracted": "4\u30de\u30a4\u30eb", "equality": false, "output_hash": "8af4ca5af9edd16fbc8baa59d3e13821"}
+{"answer_extracted": "\\dfrac{3840}{289}", "equality": true, "output_hash": "10815d509aa49bcad24ad2d7f1df91fc"}
+{"answer_extracted": "13", "equality": true, "output_hash": "befdd51aa2c02d480cbd68c18a2bce1d"}
+{"answer_extracted": "8", "equality": true, "output_hash": "8a7457dff4367666601845327aede2e6"}
+{"answer_extracted": "4", "equality": true, "output_hash": "e03b52da991494e0874b744f2d7a6883"}
+{"answer_extracted": "120\u00b0", "equality": true, "output_hash": "af5b7767b13ee55f2e141994f7900d14"}
+{"answer_extracted": "16", "equality": true, "output_hash": "e40c42bb31bf6b94f737b9f1b8e8d9e4"}
+{"answer_extracted": "9", "equality": true, "output_hash": "90700603690c1d4b6855b0431c3fac21"}
+{"answer_extracted": "64", "equality": true, "output_hash": "202dcf08f3d66a6b9d7fd310760f03e4"}
+{"answer_extracted": "204_5", "equality": true, "output_hash": "d84b0282190fea2c845aa8f8564bae98"}
+{"answer_extracted": "1/3", "equality": true, "output_hash": "ea69471af68344106fdab0bce37ec293"}
+{"answer_extracted": "1", "equality": true, "output_hash": "846392ef4f1858b46fe5cb902f6d34b6"}
+{"answer_extracted": "13", "equality": true, "output_hash": "2436ea5ced39861ba0e16a632e89aae3"}
+{"answer_extracted": "2", "equality": true, "output_hash": "26ec25f8d55c2e2ee78e976737dc5d05"}
+{"answer_extracted": "28800", "equality": true, "output_hash": "8e6c176dfcc1f156495da1485a55fc54"}
+{"answer_extracted": "3\\sqrt{5}", "equality": true, "output_hash": "66fe43417f0924b161e292993725007b"}
+{"answer_extracted": "(15, -29)", "equality": true, "output_hash": "5341996e6ab29a671f1592abf9da2933"}
+{"answer_extracted": "-2", "equality": true, "output_hash": "a51a528352edb1a9bcfad4901cd25386"}
+{"answer_extracted": "$\\frac{\\sqrt{3}}{3}$", "equality": true, "output_hash": "16b6d62bb367660ac74a13feda0eeebc"}
+{"answer_extracted": "16", "equality": true, "output_hash": "93d996849e43de6f75c70e54fd425ad3"}
+{"answer_extracted": "11", "equality": true, "output_hash": "36ebb862d07b3059554c5da191bc2873"}
+{"answer_extracted": "49\u6b73", "equality": true, "output_hash": "73091acdab422a227e2f9210d7abdc8a"}
+{"answer_extracted": "1", "equality": true, "output_hash": "99b1df5b881368e107d3e764a5b2941e"}
+{"answer_extracted": "144", "equality": true, "output_hash": "3e9bce74d205db874b7d5efd5876f993"}
+{"answer_extracted": "8", "equality": true, "output_hash": "bb8bd78c4749c8a498a5136a6a9c332a"}
+{"answer_extracted": "\\dfrac{2}{21}", "equality": true, "output_hash": "0a330a88c99f4c0aa670ced5d8a9076b"}
+{"answer_extracted": "$2\\sqrt{29}", "equality": false, "output_hash": "69aaa2510e0af6be9c52a81430f866e0"}
+{"answer_extracted": "\\dfrac{1}{4}", "equality": true, "output_hash": "211f243d605cc5b4075c49b4baa6158f"}
+{"answer_extracted": "30", "equality": true, "output_hash": "8d725684e3c8ba000e2f2aa402cca318"}
+{"answer_extracted": "\\dfrac{6}{5}", "equality": true, "output_hash": "d1f7fa2f5f42f81b2257fb975ccafae6"}
+{"answer_extracted": "2107", "equality": true, "output_hash": "9712465a61b979f6a486a9213c8ec401"}
+{"answer_extracted": "3.21", "equality": true, "output_hash": "5b380d5f660f29710bf2ee40b3cb7a9a"}
+{"answer_extracted": "18", "equality": true, "output_hash": "db6f5d1e4e20718f7be6c83e7cdb1541"}
+{"answer_extracted": "6", "equality": true, "output_hash": "8d26bdee80354d451d1976388ba4a116"}
+{"answer_extracted": "$\\frac{17}{50}$", "equality": true, "output_hash": "bfd3b1a24d70a82dfb0cf2546daf716f"}
+{"answer_extracted": "-\\dfrac{35}{9}", "equality": true, "output_hash": "2fdd9b5d64a0d0cc8ce12c66ac94c776"}
+{"answer_extracted": "$-\\sqrt{3}", "equality": true, "output_hash": "b07e4747cbc7932f640c218567e51453"}
+{"answer_extracted": "$\\frac{4}{9}$", "equality": true, "output_hash": "2369373837ca8f5a800633fd396a44fc"}
+{"answer_extracted": "$\\frac{270}{7}$", "equality": false, "output_hash": "c979f43d1f67c244e57b80539b1783d7"}
+{"answer_extracted": "65 \u7acb\u65b9\u5358\u4f4d\u3002", "equality": true, "output_hash": "8fab3491ac1c4993c88286199fe4bb89"}
+{"answer_extracted": "12", "equality": false, "output_hash": "857d69f8c28be2cd20f0152577144594"}
+{"answer_extracted": "12 \u5e73\u65b9\u5358\u4f4d", "equality": true, "output_hash": "27fed2d57af8574096f7a0fd92abd850"}
+{"answer_extracted": "1736", "equality": true, "output_hash": "6eb43d038b5547cc950a3bbc40000215"}
+{"answer_extracted": "$\\dfrac{13}{15}$", "equality": true, "output_hash": "adf09e9c9b50e35808be020ff044e2eb"}
+{"answer_extracted": "350", "equality": true, "output_hash": "dba4ce1d70cd1d94d4b14f77e65b69e6"}
+{"answer_extracted": "4", "equality": true, "output_hash": "8a38a34798da46a12f2830ab03337e3c"}
+{"answer_extracted": "2", "equality": true, "output_hash": "0e05b35ddf200b64ea37c01dc0c8537c"}
+{"answer_extracted": "3", "equality": true, "output_hash": "bb9d7d5628316d0c420382534e2b068e"}
+{"answer_extracted": "0.0000672", "equality": true, "output_hash": "96fba669563e62090d27de1737547ba0"}
+{"answer_extracted": "30", "equality": true, "output_hash": "a6a8892d5c54c029d14817a4d9bda0b2"}
+{"answer_extracted": "60", "equality": true, "output_hash": "ac41c9d368791c4ac60a9aeb57b805d0"}
+{"answer_extracted": "5x - 7y + 11z + 4 = 0", "equality": true, "output_hash": "b3c8f1e4cb8eda9ea62bb228305b7d2f"}
+{"answer_extracted": "3", "equality": true, "output_hash": "0fac4f86158ea74fbe39d2f7c9602ec8"}
+{"answer_extracted": "\\dfrac{\\sqrt{3}}{3}", "equality": true, "output_hash": "3fc01bcb358081bb647203f316154f2f"}
+{"answer_extracted": "1251\u4eba", "equality": true, "output_hash": "5be5a9a1d0598749cb640507296aef73"}
+{"answer_extracted": "23", "equality": true, "output_hash": "ba6fc012212c62486f8204ea2e49e68c"}
+{"answer_extracted": "(2, \u221e)", "equality": true, "output_hash": "f11714af6cc0977cf0d9eebf5a6bc40b"}
+{"answer_extracted": "1", "equality": true, "output_hash": "c74789182437a0b25fbe0c794aa2df40"}
+{"answer_extracted": "7", "equality": true, "output_hash": "6ab9e2f7b3d16b4f317a8e09ef970db1"}
+{"answer_extracted": "7\u679a", "equality": true, "output_hash": "3662e0406a8a95cafb8981fb426b3f1e"}
+{"answer_extracted": "6", "equality": true, "output_hash": "dd0b2fb813df860c3ce4c3ec0e663fa1"}
+{"answer_extracted": "160", "equality": true, "output_hash": "3a92446d87bdc1560cd69dffc152c862"}
+{"answer_extracted": "13/18", "equality": true, "output_hash": "b7668cae9dbfb22ab288b7dab32e8e3c"}
+{"answer_extracted": "$0$", "equality": true, "output_hash": "a4112d21fc593e3b9370feb4a2879977"}
+{"answer_extracted": "$30", "equality": true, "output_hash": "4333bbb9ecf4457cd89c656a51f6aaf6"}
+{"answer_extracted": "0, 1, 2, 3", "equality": false, "output_hash": "e692a5facd8c3c1cfe53567f26c35e36"}
+{"answer_extracted": "\\dfrac{1}{4}", "equality": true, "output_hash": "75325d10fd65e225ddf80b38f3a3ad5c"}
+{"answer_extracted": "24", "equality": true, "output_hash": "ef0eb87bfb42179fd46298831e075c8f"}
+{"answer_extracted": "1600", "equality": true, "output_hash": "d76c502f820f716771cb0738e50f97ec"}
+{"answer_extracted": "6", "equality": true, "output_hash": "cc0d9046035b3ab85177fc726c757215"}
+{"answer_extracted": "10080", "equality": true, "output_hash": "7409b435c12d3451ef8f1ea80b077823"}
+{"answer_extracted": "17", "equality": true, "output_hash": "7dbd267fe09cf4aa661838a0410fe316"}
+{"answer_extracted": "40 daps", "equality": true, "output_hash": "de2e6826e96ad4e9a636f408c5a0ffaf"}
+{"answer_extracted": "66", "equality": true, "output_hash": "eb70f2ca6221807985fbe99fec89d2c5"}
+{"answer_extracted": "1", "equality": false, "output_hash": "5075e00a85440bdfa303cc566b13adda"}
+{"answer_extracted": "12", "equality": true, "output_hash": "4d41502d0362779d9513e29891f4f08a"}
+{"answer_extracted": "16", "equality": false, "output_hash": "8ac2243106e38f5d618002209b9832f0"}
+{"answer_extracted": "\\begin{pmatrix} -2 \\\\ -14 \\\\ -7 \\end{pmatrix}", "equality": true, "output_hash": "5603eca81295e22d89d1de36dacfd607"}
+{"answer_extracted": "(3/2, -13)", "equality": true, "output_hash": "35dc3a9f1545607230660eabed95661d"}
+{"answer_extracted": "28", "equality": true, "output_hash": "a6a5d3dec2ca5cac95c5b146e63a74a7"}
+{"answer_extracted": "60", "equality": false, "output_hash": "7922736e7781816fe83256043e87f980"}
+{"answer_extracted": "16", "equality": true, "output_hash": "064234a85019880ce0b0a2c35fee689d"}
+{"answer_extracted": "10", "equality": true, "output_hash": "9231838f5280136160bd3af09f6303b1"}
+{"answer_extracted": "5", "equality": true, "output_hash": "2fcddc3cae86bb906c0580a81e012fb5"}
+{"answer_extracted": "56", "equality": true, "output_hash": "0b939779ae79886def7b9889b447a3e2"}
+{"answer_extracted": "2", "equality": true, "output_hash": "28967a5dc638e7a5577e8e905a166f3f"}
+{"answer_extracted": "110", "equality": true, "output_hash": "e78bdb86aac8f5d3b014e503544e5d54"}
+{"answer_extracted": "2", "equality": true, "output_hash": "c084a08f41ebd1d14767f721b8228a75"}
+{"answer_extracted": "6 Trinkets", "equality": true, "output_hash": "8121da93382658954c80d827511f5f29"}
+{"answer_extracted": "11111111100", "equality": true, "output_hash": "faecba284bea4be702899e456e00fcb1"}
+{"answer_extracted": "(-1, 6)", "equality": true, "output_hash": "782fec8e0a8371e8f9be6597e18eef41"}
+{"answer_extracted": "\\dfrac{1}{2}", "equality": true, "output_hash": "d6fe15a91487e2e9f1eb9f0999328078"}
+{"answer_extracted": "\\dfrac{16}{27}", "equality": true, "output_hash": "c297d7efd7422a939fbfb7233f2fa41d"}
+{"answer_extracted": "900", "equality": true, "output_hash": "774af83b41f3c02ba68fed3d808879e9"}
+{"answer_extracted": "54", "equality": true, "output_hash": "783a6cb848fe4ec903e1ccbc9117a014"}
+{"answer_extracted": "14", "equality": true, "output_hash": "959e63fc9b918c7ae0a9ff935778093a"}
+{"answer_extracted": "$\\dfrac{9}{256}$", "equality": true, "output_hash": "4b1582ba926071a1f128ba39ee6851e6"}
+{"answer_extracted": "11", "equality": true, "output_hash": "e6654b9ca5931948581603184a9c85fc"}
+{"answer_extracted": "3\u901a\u308a", "equality": true, "output_hash": "ecd96e71194e49128c56a90ab4a97957"}
+{"answer_extracted": "C", "equality": true, "output_hash": "7802129b6773f5dcdc5bc1cc5fe354fe"}
+{"answer_extracted": "288\\pi", "equality": true, "output_hash": "00d784a2140b8486a1f348d23565a358"}
+{"answer_extracted": "90\u901a\u308a", "equality": true, "output_hash": "d2820ffd5106dfde631a8904bf5bf7e9"}
+{"answer_extracted": "\\dfrac{16}{5}", "equality": true, "output_hash": "76346d74f151c529c1c2d72ea4b5ffee"}
+{"answer_extracted": "10", "equality": true, "output_hash": "0407aac794321bbde06cb5d93e1e6f63"}
+{"answer_extracted": "\\dfrac{1997}{2}", "equality": true, "output_hash": "26633fd55c47edc439a182f9150ea3a5"}
+{"answer_extracted": "30", "equality": true, "output_hash": "02a6f0b0c867b7d82a3319861a969f3e"}
+{"answer_extracted": "34", "equality": true, "output_hash": "e338c5ad986e7f13440e5117edb691e5"}
+{"answer_extracted": "\\dfrac{5}{9}", "equality": true, "output_hash": "e3ce9945c768c9ba81ecacfb8e4ae77e"}
+{"answer_extracted": "12", "equality": true, "output_hash": "c435c63d75ea11473f126f272197e6bf"}
+{"answer_extracted": "22", "equality": true, "output_hash": "79a5173e688feb7b06a0ca03d09bc142"}
+{"answer_extracted": "-4", "equality": true, "output_hash": "00f81abf2582e63279373ba9cf75e10d"}
+{"answer_extracted": "16", "equality": true, "output_hash": "2d78bc72c33fa6723d6e00af029b2175"}
+{"answer_extracted": "154", "equality": false, "output_hash": "c64d201325b37c8061b653c8c786d2cd"}
+{"answer_extracted": "17", "equality": true, "output_hash": "2292bab9ff8386ea994446746da0b4f8"}
+{"answer_extracted": "32,348\u30c9\u30eb", "equality": true, "output_hash": "973864ee30303a87d85023784d8ade7e"}
+{"answer_extracted": "3 \u5358\u4f4d", "equality": true, "output_hash": "25095c8b462dc3c58ed657351e9daea9"}
+{"answer_extracted": "8", "equality": true, "output_hash": "a92d18d948a2801f700e9c4007a3a42d"}
+{"answer_extracted": "-13x + 3", "equality": true, "output_hash": "f23d1568d3d04e7cec11afc74e0acdc9"}
+{"answer_extracted": "8\u54c1", "equality": true, "output_hash": "8fb4774bfaf0f34e92569a0fa2d2df30"}
+{"answer_extracted": "$\\dfrac{10}{11}$", "equality": true, "output_hash": "8ca6b6d122668bc8d4895e2e0811fd2b"}
+{"answer_extracted": "\\begin{pmatrix} -1 & 0 \\\\ 0 & -1 \\end{pmatrix}", "equality": true, "output_hash": "dbcd15ca73c1bac87f214c7591047b15"}
+{"answer_extracted": "1", "equality": false, "output_hash": "7f6a490cadc9b578e5ea534e24cddbcf"}
+{"answer_extracted": "13", "equality": true, "output_hash": "e7e2c4516462aea1b19dccb3a7dd60ea"}
+{"answer_extracted": "120", "equality": false, "output_hash": "2c241f8394ff386aa1ec12bf91cf07dd"}
+{"answer_extracted": "81", "equality": true, "output_hash": "65d724b88cabc2edfa2d45605098bfa0"}
+{"answer_extracted": "1/8", "equality": true, "output_hash": "1b79204c9aa765fa0c1a428437ab192f"}
+{"answer_extracted": "28", "equality": true, "output_hash": "82a90776b36734f63f196c6a0f7db37e"}
+{"answer_extracted": "E", "equality": true, "output_hash": "8df126b19c957cdf30589176cde657b5"}
+{"answer_extracted": "\\dfrac{8}{21}", "equality": true, "output_hash": "709837f6205127cb0ba301fa960424d5"}
+{"answer_extracted": "864\u5e73\u65b9\u30a4\u30f3\u30c1", "equality": true, "output_hash": "b462f50a6117c2d5fa532117adba5c8c"}
+{"answer_extracted": "16", "equality": true, "output_hash": "0af15a9d5fc987e1d346fc7da5e5c848"}
+{"answer_extracted": "22", "equality": true, "output_hash": "272850824c0888381108480434ce609d"}
+{"answer_extracted": "$120", "equality": true, "output_hash": "f74b41d4846d4c354519d255e4ed3fda"}
+{"answer_extracted": "76", "equality": true, "output_hash": "afb3bb86741750b78f5bd728a1cba5cd"}
+{"answer_extracted": "4", "equality": true, "output_hash": "f404bb7392fb9d75aa262344fcd996d3"}
+{"answer_extracted": "15", "equality": true, "output_hash": "d407d40fec3311567127ddab543e81a6"}
+{"answer_extracted": "1", "equality": false, "output_hash": "63aadd210602389d3c8d2d1304249f5e"}
+{"answer_extracted": "4005", "equality": true, "output_hash": "ee39ca46f990f852f61c8336f99216ac"}
+{"answer_extracted": "33/100", "equality": true, "output_hash": "1544e2f7c70ba295b4c972a1f7b0e5e5"}
+{"answer_extracted": "180", "equality": true, "output_hash": "f586d69bb519557d132521498a73c1da"}
+{"answer_extracted": "1", "equality": true, "output_hash": "3fa82f579bca67f0b532315e041cb4fb"}
+{"answer_extracted": "6\u901a\u308a", "equality": true, "output_hash": "a2a182625fccda2cb5a10b0ecf068c76"}
+{"answer_extracted": "$10", "equality": true, "output_hash": "ae329802e0f5b881dd6eae885d26c166"}
+{"answer_extracted": "333", "equality": true, "output_hash": "8171603578d3e0c2f931460cc3361e9e"}
+{"answer_extracted": "1030", "equality": true, "output_hash": "a996bbc1b97ec6616caee6378e4d25f8"}
+{"answer_extracted": "$1250", "equality": true, "output_hash": "fdd48668b60220a5ad175db27f3c56b9"}
+{"answer_extracted": "18 + 2\\pi", "equality": true, "output_hash": "c1712acd8079643150b043563c1da9b8"}
+{"answer_extracted": "7", "equality": true, "output_hash": "dd304c13b497eee324a2de36dd238a45"}
+{"answer_extracted": "11", "equality": true, "output_hash": "7c63e914bdd00748f721e0f09d484c18"}
+{"answer_extracted": "\\(\\sqrt{53}\\)", "equality": true, "output_hash": "055bef15c2ad5cc0772880b2c79d71e3"}
+{"answer_extracted": "255", "equality": true, "output_hash": "3db3f1ad0bad87520c24dd0cdb68ba75"}
+{"answer_extracted": "7\u03c0", "equality": true, "output_hash": "dbfb652eedd4bb998bf99671f894ab63"}
+{"answer_extracted": "8", "equality": true, "output_hash": "21bffe2a554c9645bff03b01dc76cb83"}
+{"answer_extracted": "36", "equality": true, "output_hash": "271b80255cbc08e725cf4d4a484bba66"}
+{"answer_extracted": "129", "equality": true, "output_hash": "0e73f3fc062839481084f86d73f6c2b6"}
+{"answer_extracted": "1", "equality": true, "output_hash": "e5da6b0810037e806edc827ec5589235"}
+{"answer_extracted": "\\boxed{3 + 2\\sqrt{2}, 3 - 2\\sqrt{2}, -3 + 2\\sqrt{2}, -3 - 2\\sqrt{2}}", "equality": true, "output_hash": "ebc0b89dedf27cc775f2482ffa947556"}
+{"answer_extracted": "2", "equality": false, "output_hash": "f76bc550081a6547b1615065c19a2a62"}
+{"answer_extracted": "$\\dfrac{17}{21}$", "equality": true, "output_hash": "ceea173d1ba6eb3acec9a63f58d5edf0"}
+{"answer_extracted": "36", "equality": true, "output_hash": "2e48e2233941245e29684450105a4227"}
+{"answer_extracted": "7", "equality": true, "output_hash": "5f47495be916895c46c04be0a7b1cb86"}
+{"answer_extracted": "16", "equality": true, "output_hash": "cb24393dad24e9a1f8532a6da9747a57"}
+{"answer_extracted": "4", "equality": true, "output_hash": "faff6a9ef11757ab16f1fed6222113f6"}
+{"answer_extracted": "63", "equality": true, "output_hash": "ed93b6fe2e9f48c36d53411b29b6cc41"}
+{"answer_extracted": "898", "equality": true, "output_hash": "87a7817fb92eab7b6086c2f3e5a6b28f"}
+{"answer_extracted": "\\(\\left( \\frac{3}{5}, \\frac{8}{3} \\right]\\)", "equality": true, "output_hash": "219026ebe8dc989e7621d35eedc4d0cd"}
+{"answer_extracted": "58", "equality": true, "output_hash": "778b029487ab886cbe552174f294594c"}
+{"answer_extracted": "11", "equality": true, "output_hash": "143fb06ec31aae9e27f9fa2e7c8fcc2a"}
+{"answer_extracted": "B", "equality": true, "output_hash": "ab6add70ed61b92de68be19f961071ee"}
+{"answer_extracted": "103", "equality": true, "output_hash": "ada6e79160a77219bbb0405a8599cb03"}
+{"answer_extracted": "\\begin{pmatrix} -18 \\\\ -49 \\\\ 96 \\end{pmatrix}", "equality": true, "output_hash": "ed68ea16acd884cf4714c18893964c8a"}
+{"answer_extracted": "63", "equality": true, "output_hash": "0d25b95df61551adad882ff1a4372e20"}
+{"answer_extracted": "12", "equality": true, "output_hash": "6f1219787db7d078565c8426472473f5"}
+{"answer_extracted": "5.3", "equality": false, "output_hash": "e76330d33710924773888f71e414ae63"}
+{"answer_extracted": "5", "equality": true, "output_hash": "1f0c1a33be878c73c723a692183c3ef0"}
+{"answer_extracted": "28", "equality": true, "output_hash": "df116840304a3ee91070f4006e2a5b5d"}
+{"answer_extracted": "9", "equality": true, "output_hash": "d7431f92d117ca21c316553d7a476499"}
+{"answer_extracted": "$\\dfrac{9}{19}$", "equality": true, "output_hash": "45a02fd9af22841c8bd24d5d5ccd2153"}
+{"answer_extracted": "6", "equality": true, "output_hash": "2072715bd2a7baaefe53db0fd46dc332"}
+{"answer_extracted": "$(-\\infty, 0]", "equality": true, "output_hash": "ea5fe69a894789e0aa0934380f2c5e7a"}
+{"answer_extracted": "1 + \\sqrt{3}", "equality": false, "output_hash": "55e28bf2b947c9ce827125c9377111e0"}
+{"answer_extracted": "14", "equality": true, "output_hash": "cd281387dcf8fd16edecdf22657677bf"}
+{"answer_extracted": "49", "equality": true, "output_hash": "544ac458d8970cda46e10f63e2b14619"}
+{"answer_extracted": "3", "equality": true, "output_hash": "1437f25f8e929675d35679b042b65574"}
+{"answer_extracted": "(5, \u221e)", "equality": true, "output_hash": "cc0bad62f8803570165f27f8425d6397"}
+{"answer_extracted": "12\u03c0", "equality": true, "output_hash": "d6cb8d77fe63ea6d394772aae8322770"}
+{"answer_extracted": "(2, 4)", "equality": true, "output_hash": "2afaa48a371e01befa4107dc113b199a"}
+{"answer_extracted": "15", "equality": false, "output_hash": "e30501c5172e53eef2e4bf98771a7dd5"}
+{"answer_extracted": "12", "equality": true, "output_hash": "9ac57ed0c38897f7635b81d208b17f99"}
+{"answer_extracted": "0", "equality": true, "output_hash": "2f49be996aeca07e51cf7d6dee43fc22"}
+{"answer_extracted": "$\\frac{9a + 11}{20}$", "equality": true, "output_hash": "245037ee71546e4151cf282961770a70"}
+{"answer_extracted": "-128", "equality": true, "output_hash": "1de44e2fa75952066db6f94bacac9036"}
+{"answer_extracted": "$-\\dfrac{24}{25}", "equality": true, "output_hash": "1930f737cb6382aecaf3708a5d45e90c"}
+{"answer_extracted": "10\u30e1\u30fc\u30c8\u30eb", "equality": true, "output_hash": "9d9e1a8e17298f225e34a9973033f35a"}
+{"answer_extracted": "-1", "equality": true, "output_hash": "d8b75cec66dc61928c761d6e6cde14eb"}
+{"answer_extracted": "\\dfrac{1}{3}", "equality": true, "output_hash": "6cd5332f2dc498967d3b0da017465eba"}
+{"answer_extracted": "150", "equality": false, "output_hash": "085e27d192c64e7a907a9df9d2cb7984"}
+{"answer_extracted": "4\u500b", "equality": true, "output_hash": "e011224dcbfb78cdbc561299d1709e81"}
+{"answer_extracted": "\\dfrac{9}{100}", "equality": true, "output_hash": "674dbf7bb1c75d30ec7ad32a7af36214"}
+{"answer_extracted": "15", "equality": true, "output_hash": "793abe4f5fcd72368e8f0a55ff1c1598"}
+{"answer_extracted": "3", "equality": true, "output_hash": "3a401944f0391c8b3f775255a57bb725"}
+{"answer_extracted": "4 \u30a4\u30f3\u30c1", "equality": true, "output_hash": "ca0e23a8a467dce9ad3f4da4c7dddad1"}
+{"answer_extracted": "1940", "equality": true, "output_hash": "97353bf4b94a00b647b75b2c1b0d6496"}
+{"answer_extracted": "$\\dfrac{13}{6}$", "equality": true, "output_hash": "adf0a4937601bcd74f786eba963396cd"}
+{"answer_extracted": "2", "equality": true, "output_hash": "b0e343b85d9c5fa100f103830176b049"}
+{"answer_extracted": "3", "equality": true, "output_hash": "485ee63b184cbe3e839dd188cf4e3b2e"}
+{"answer_extracted": "-120", "equality": true, "output_hash": "4df14c9d04dfc2c7f8b1f67fd04f4e62"}
+{"answer_extracted": "3", "equality": true, "output_hash": "2190ff8697658a109b4ae1158c4a2235"}
+{"answer_extracted": "26000", "equality": true, "output_hash": "dab8147c057fb803b890e433e2793577"}
+{"answer_extracted": "6", "equality": true, "output_hash": "8cfc5e4082b50f80c767f795bc45b344"}
+{"answer_extracted": "4343_6", "equality": true, "output_hash": "9be990999f0da27947fa635fafe13bc0"}
+{"answer_extracted": "$2k", "equality": true, "output_hash": "6f75f0f1962b33bf80d464c0795d46ff"}
+{"answer_extracted": "67\u00b0", "equality": false, "output_hash": "b8246595ad9293ba62fc7bb4396c3b8c"}
+{"answer_extracted": "-2", "equality": true, "output_hash": "b6cbc1120cdb507336bcfd40ad16f67e"}
+{"answer_extracted": "2", "equality": true, "output_hash": "0cffdc5aa85fc057ab923c83a8bb3f1e"}
+{"answer_extracted": "58500", "equality": true, "output_hash": "80554ced2e95cb22d679f596973008ce"}
+{"answer_extracted": "None", "equality": false, "output_hash": "4fffb94e981b1fee1ac5104a74adcb33"}
+{"answer_extracted": "1", "equality": true, "output_hash": "16f405b845b57e6f2979d132a45bcd66"}
+{"answer_extracted": "66", "equality": true, "output_hash": "325454281b17e8e14bb993b94b9da08e"}
+{"answer_extracted": "$6r^2 - 4r - 24$", "equality": true, "output_hash": "78cef4e3d00884757d6e2f6368cf5ce9"}
+{"answer_extracted": "4495", "equality": true, "output_hash": "09a2e9b8f3cd2f57f545608e51ec7f25"}
+{"answer_extracted": "10080", "equality": true, "output_hash": "094f28df809f28495c5fe456a422fd92"}
+{"answer_extracted": "4", "equality": true, "output_hash": "709f1299c27e538ebe644248a96d5cf5"}
+{"answer_extracted": "\\dfrac{1}{16}", "equality": true, "output_hash": "8c0f154cd24b0e8f45cf38490f24ebd6"}
+{"answer_extracted": "11(\\sqrt{5} + 1)", "equality": true, "output_hash": "dbe881115219e73c92a7b237aa489f65"}
+{"answer_extracted": "480", "equality": true, "output_hash": "618bcbb1dcf43c4992eda21f8a0bff99"}
+{"answer_extracted": "81", "equality": true, "output_hash": "bce93437606a11b1117828c1e2053267"}
+{"answer_extracted": "100", "equality": true, "output_hash": "223d3c14285a72ecee906afb19bb548e"}
+{"answer_extracted": "\\boxed{-4}", "equality": false, "output_hash": "db171aa787ba1d8195703b8bcc9c5574"}
+{"answer_extracted": "4", "equality": true, "output_hash": "f4800d16051d7385fec60fcb4ede5856"}
+{"answer_extracted": "\u6955\u5186", "equality": true, "output_hash": "fb2ea7625ea2eb4f394ac9af16d121c1"}
+{"answer_extracted": "6", "equality": true, "output_hash": "3c68504c2c28722b8df0e59fdc99fce7"}
+{"answer_extracted": "$\\frac{7}{4}$", "equality": true, "output_hash": "199c56d0a99e588b7a519c3b3c3e1194"}
+{"answer_extracted": "16\\sqrt{3}", "equality": true, "output_hash": "52e0a9a43ff795d2ba1a12bfbaa5750d"}
+{"answer_extracted": "\\(\\boxed{\\dfrac{1}{4}}\\)", "equality": true, "output_hash": "a0b559ee6033f5cb13fa907060131578"}
+{"answer_extracted": "2", "equality": true, "output_hash": "86abeda4e669d61aaf7fc2aa2987611d"}
+{"answer_extracted": "(1, -16, -4, 43)", "equality": true, "output_hash": "123121323223ee3769042046f93b2b2c"}
+{"answer_extracted": "8", "equality": true, "output_hash": "c916f5cc1a4265a6e9c6429c6ea7c26d"}
+{"answer_extracted": "$4", "equality": true, "output_hash": "f96df9fecbd312ceaa0fd75434e9aacc"}
+{"answer_extracted": "1", "equality": true, "output_hash": "d0db3f751d73bbe06cfc81eed5d48a9d"}
+{"answer_extracted": "31", "equality": true, "output_hash": "aebc85ac6e1e7ff81bb789c0da92978d"}
+{"answer_extracted": "189 \u5e73\u65b9\u30bb\u30f3\u30c1\u30e1\u30fc\u30c8\u30eb", "equality": false, "output_hash": "126e6ef46039a61bf1dc61b55a01ff0f"}
+{"answer_extracted": "-41", "equality": true, "output_hash": "b2f5ebab0ddfc73b7f56dca542f6568f"}
+{"answer_extracted": "17", "equality": true, "output_hash": "4dfcf8f9583dc4d49a20ccbf79534ea5"}
+{"answer_extracted": "90", "equality": true, "output_hash": "8e870457bb9dba9720fd0f9cf9ccc287"}
+{"answer_extracted": "1 + 2i", "equality": true, "output_hash": "71dd00a16700e4d41a848eb7ff822a04"}
+{"answer_extracted": "4", "equality": true, "output_hash": "44217f26bfc16b17e3e4093299eaf56d"}
+{"answer_extracted": "25", "equality": true, "output_hash": "e8d5f0da3ba4bd68e3e2097fd52d5ea9"}
+{"answer_extracted": "(8, -2)", "equality": true, "output_hash": "35fd88eb59c15ed90209a29f29549d1b"}
+{"answer_extracted": "6", "equality": true, "output_hash": "a64377a9a49c9103770d8135544a9d52"}
+{"answer_extracted": "3", "equality": true, "output_hash": "df4e27f317815ce2755a244e9c1be525"}
+{"answer_extracted": "12th \u30b0\u30ec\u30fc\u30c9", "equality": true, "output_hash": "b0402ded2eda03f0f08b1f9df50e7957"}
+{"answer_extracted": "(0, 9) \\cup (9, 36)", "equality": true, "output_hash": "a95730278d3fa2d7558380099cb6469c"}
+{"answer_extracted": "\\dfrac{1}{2}", "equality": true, "output_hash": "efdc268e5ec9081b91713f3b448c041b"}
+{"answer_extracted": "\\dfrac{20000}{\\pi}", "equality": true, "output_hash": "b33a1952aec69ce5e6f1f73eaa6b6aca"}
+{"answer_extracted": "[-2, 7]", "equality": false, "output_hash": "db9b78e9d64883ddc783213a9e3d04fb"}
+{"answer_extracted": "15x - 80", "equality": true, "output_hash": "f3c1251df021930835a9214ee9d22dc0"}
+{"answer_extracted": "1", "equality": false, "output_hash": "b3e1005a0b84b6a7436a022aa95d0c16"}
+{"answer_extracted": "11", "equality": true, "output_hash": "7172561529642cd68dc0d69b2d516e22"}
+{"answer_extracted": "18", "equality": true, "output_hash": "bfcd5f0713088cd1e6c9796948c4b3d2"}
+{"answer_extracted": "\\dfrac{11}{2}", "equality": true, "output_hash": "8ba5ef2c13f8efca26f40db2250c92c4"}
+{"answer_extracted": "\\dfrac{\\sqrt{21}}{5}", "equality": true, "output_hash": "c0d66014b6f1d48f232b20f703d9ca31"}
+{"answer_extracted": "12", "equality": true, "output_hash": "685b35b0faed307925fc3a55ddb70f49"}
+{"answer_extracted": "0", "equality": true, "output_hash": "108e332153798c745b3b8a0450ec5a8c"}
+{"answer_extracted": "$\\sqrt{66}$", "equality": true, "output_hash": "10c037e40db2919b345ccc405e27e41c"}
+{"answer_extracted": "3/4", "equality": true, "output_hash": "55918d2cc724fc1da9a626d8d6aa9fee"}
+{"answer_extracted": "-\\dfrac{3}{8}", "equality": true, "output_hash": "fd90793d9c01aea5441b211769bb8cf7"}
+{"answer_extracted": "4", "equality": true, "output_hash": "383e51a99c1ad6b9d279ebd4846ab006"}
+{"answer_extracted": "2", "equality": true, "output_hash": "aa0e0e290893f597693a4376e72d0810"}
+{"answer_extracted": "23", "equality": true, "output_hash": "7e79d5cfe95420c040538b6f8a6da7aa"}
+{"answer_extracted": "\u30ca\u30d3\u30f3", "equality": false, "output_hash": "c98a69d147a5f122df4feacc8f69b8d6"}
+{"answer_extracted": "326.5", "equality": true, "output_hash": "b29212b794f9cf0e64ecc239a8b01e66"}
+{"answer_extracted": "7", "equality": false, "output_hash": "4f4c0357eee01e0cfe1556ddc038f591"}
+{"answer_extracted": "\\dfrac{13}{4}", "equality": true, "output_hash": "7c69351fcd25f6c67e0f203f5aa5902e"}
+{"answer_extracted": "-9 + 2i", "equality": false, "output_hash": "36984bc6d017f6e02c6ca38b676c273b"}
+{"answer_extracted": "$3", "equality": true, "output_hash": "c0088a8546004596d05330ad05ff3011"}
+{"answer_extracted": "3", "equality": true, "output_hash": "03a7b6d413c0383d95c3ab8d488443ad"}
+{"answer_extracted": "60\u901a\u308a", "equality": true, "output_hash": "be57eee77124c158931a5ece40465bc4"}
+{"answer_extracted": "0", "equality": true, "output_hash": "e6d75cfead13ba257762684517b15f78"}
+{"answer_extracted": "9", "equality": true, "output_hash": "8f8ad44e41fdb193504fa2f34be9534e"}
+{"answer_extracted": "$\\begin{pmatrix} \\dfrac{1}{5} \\\\ -\\dfrac{18}{5} \\end{pmatrix}$", "equality": true, "output_hash": "71e064d34f9577e5f7efe948aaa1452a"}
+{"answer_extracted": "2\\sqrt{5}", "equality": true, "output_hash": "58f89d654fdead41cf7619bdf66e7a53"}
+{"answer_extracted": "3, 6, 9", "equality": false, "output_hash": "9cec60e2fce082d2fad57832f3416464"}
+{"answer_extracted": "6", "equality": false, "output_hash": "69dc91bc0c296f0b29c773f7c1168aac"}
+{"answer_extracted": "$406", "equality": true, "output_hash": "244bafa76ff88ae1676e28bc94a9f95b"}
+{"answer_extracted": "$5r^5$", "equality": true, "output_hash": "7a0ea6c48d4b18669c858553a366f15d"}
+{"answer_extracted": "10", "equality": true, "output_hash": "c814d3ad7d3d06b2ec3fe1daedbed1a8"}
+{"answer_extracted": "9", "equality": true, "output_hash": "850be309c8ecdc519c61139bd7a2c702"}
+{"answer_extracted": "$\\frac{1}{8}$", "equality": true, "output_hash": "f16735e26ba870dfaae2edfc2e05626a"}
+{"answer_extracted": "-2", "equality": true, "output_hash": "7e1d264ea3b4c3375360dec37b6a393e"}
+{"answer_extracted": "$2\\sqrt{5}", "equality": true, "output_hash": "99f0a8b91eb355b34f977268fef26652"}
+{"answer_extracted": "\\begin{pmatrix} -7 \\\\ 16 \\\\ 5 \\end{pmatrix}", "equality": true, "output_hash": "88e712ba05b4cfb51f5d0399c9d8f7b3"}
+{"answer_extracted": "$\\boxed{\\begin{pmatrix}\\dfrac{16}{49} \\\\ \\dfrac{48}{49} \\\\ \\dfrac{24}{49}\\end{pmatrix}}$", "equality": true, "output_hash": "60f57e73cc80ecd4158bf31990b17ef6"}
+{"answer_extracted": "27", "equality": true, "output_hash": "9978e51ebf3fa248002e6c355322ab89"}
+{"answer_extracted": "$x^3 - 8x - 8 = 0", "equality": false, "output_hash": "82354b82b67522efacebfaaffcf58315"}
+{"answer_extracted": "1440", "equality": true, "output_hash": "967283ed4f17c06945b726478ea8cf68"}
+{"answer_extracted": "600", "equality": true, "output_hash": "bc48b881a40f2171e8f0e97c911b7382"}
+{"answer_extracted": "$3R^2", "equality": true, "output_hash": "af2c61c56ead038e681cf87a5c0be86e"}
+{"answer_extracted": "6\\sqrt{2}", "equality": true, "output_hash": "1b33dc6976c4ca450e8d3fae6300e097"}
+{"answer_extracted": "29 cents", "equality": true, "output_hash": "c274604841fc21ab1fc28c2be1dc5645"}
+{"answer_extracted": "64", "equality": true, "output_hash": "7ee8d52e447f53e34d77cbd9bb8dc59c"}
+{"answer_extracted": "50", "equality": true, "output_hash": "5b8c4fcd31a105a4d78bce1195b7f13b"}
+{"answer_extracted": "4.5", "equality": true, "output_hash": "7652adac7f328369abe08650e9b094f3"}
+{"answer_extracted": "$\\left[ \\dfrac{\\pi^2}{8}, \\dfrac{5\\pi^2}{4} \\right]$", "equality": true, "output_hash": "1f3791bc0ddc56c6048b6a34fb6202d0"}
+{"answer_extracted": "331", "equality": true, "output_hash": "63d36046b8f67914b2fcaf3465794feb"}
+{"answer_extracted": "0.35625", "equality": true, "output_hash": "ae07c249a4309b55943891f1128334cb"}
+{"answer_extracted": "32", "equality": true, "output_hash": "a0b46a50e18871a18bca09adc4dbb780"}
+{"answer_extracted": "(-\\infty, 2) \u222a (3, \u221e)", "equality": true, "output_hash": "e4638b779cab5332424dca349a50d9cc"}
+{"answer_extracted": "$4", "equality": true, "output_hash": "872f3432af86fb34df9719bdf0862bd2"}
+{"answer_extracted": "2", "equality": false, "output_hash": "47c3506ec3ee61c84da4402652878185"}
+{"answer_extracted": "4", "equality": true, "output_hash": "ec4bbfa2f0c6be4dcbd0f4da40a6a388"}
+{"answer_extracted": "$x^8 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2 + x + 1", "equality": true, "output_hash": "3d1b86e97de7f8d095e11dded6c115fc"}
+{"answer_extracted": "14", "equality": true, "output_hash": "78bc6f9e1615cc6b07cda34c44d0706b"}
+{"answer_extracted": "550 \u30ac\u30ed\u30f3", "equality": true, "output_hash": "f2142abcebf96d982db0172d9e1ba0ed"}
+{"answer_extracted": "256", "equality": true, "output_hash": "60011feee2fa023b44a552fccdf53c53"}
+{"answer_extracted": "45", "equality": true, "output_hash": "ac7c1cf84c5418e0ab8cd71014cdad34"}
+{"answer_extracted": "\\dfrac{1}{2}", "equality": true, "output_hash": "e75e0bd10bfd090a4d9a95b108261c06"}
+{"answer_extracted": "15", "equality": true, "output_hash": "dc75394f24550d4335295a2c028fa5b9"}
+{"answer_extracted": "8", "equality": true, "output_hash": "4a5097e6c579989084041640fff28cf7"}
+{"answer_extracted": "9", "equality": true, "output_hash": "3b1dd76da6eb8759386b9fe864bc4872"}
+{"answer_extracted": "44", "equality": true, "output_hash": "378d5bfe76181ad2ce3fd25a936bba7f"}
+{"answer_extracted": "47", "equality": true, "output_hash": "f978859aaf387995d033eb09399a804e"}
+{"answer_extracted": "64", "equality": true, "output_hash": "50babe49baa493a81528acc45b2bb676"}
+{"answer_extracted": "\\dfrac{639}{40}", "equality": true, "output_hash": "7c7a27e914adff56bbcad3d1a09402e8"}
+{"answer_extracted": "143", "equality": true, "output_hash": "d6554b0c847beb7a77c6c9f441bd0f7b"}
+{"answer_extracted": "10", "equality": true, "output_hash": "b838baa35ebfb1929939db6499a63e5f"}
+{"answer_extracted": "$y = 2x + 3", "equality": true, "output_hash": "7a65704780d02beb78b0a467e31b5831"}
+{"answer_extracted": "6 \u7a2e\u985e", "equality": true, "output_hash": "f9bd08b99f3c3bf2d37cd6707a30aee6"}
+{"answer_extracted": "1,-2", "equality": false, "output_hash": "591740d02bd55ac6ba3aaf624a08a7bf"}
+{"answer_extracted": "0", "equality": true, "output_hash": "0acb30dd0c256d2e8511271fe2462fdc"}
+{"answer_extracted": "41", "equality": true, "output_hash": "60e8f96ae4a4f7182f32ee78ae0f68ed"}
+{"answer_extracted": "$18.90", "equality": true, "output_hash": "7e992656540051a8c8ab0768ccb545d9"}
+{"answer_extracted": "105", "equality": false, "output_hash": "589521b6c530b73c221f016b737a8c43"}
+{"answer_extracted": "12", "equality": true, "output_hash": "ba44deec8ae28628ec8510b9017ea0f9"}
+{"answer_extracted": "59", "equality": true, "output_hash": "c2a2a81a86fa417f389c6160e50f4497"}
+{"answer_extracted": "2", "equality": true, "output_hash": "d7ca3bcbf215642287774350ae40d3d9"}
+{"answer_extracted": "2.09", "equality": false, "output_hash": "50b4f29ca8b601892324c4ccc1d08956"}
+{"answer_extracted": "121", "equality": true, "output_hash": "a813a9aaa80746561b388714b4447076"}
+{"answer_extracted": "8\\pi", "equality": true, "output_hash": "c3c77ed96108ea1d5f5c32e973a182e2"}
+{"answer_extracted": "15", "equality": false, "output_hash": "ca39926645f2b6c3a4b44c92c5d031f6"}
+{"answer_extracted": "8", "equality": true, "output_hash": "6403f6f8418da457c68940248dda8071"}
+{"answer_extracted": "$25", "equality": true, "output_hash": "bdf140c51e90c6a81b5d441eb1d273f7"}
+{"answer_extracted": "27648", "equality": true, "output_hash": "2001210e3eb4f9eb6f0c05c232620efd"}
+{"answer_extracted": "84\u70b9", "equality": true, "output_hash": "0d7a414103cdb23bebd6dc6009ec6f91"}
+{"answer_extracted": "137\\frac{1}{2}", "equality": true, "output_hash": "959ec6e3b54f28b6d0b2be393b8f5977"}
+{"answer_extracted": "7", "equality": true, "output_hash": "3203078fec9f15f3f68def95f6f3d29f"}
+{"answer_extracted": "3", "equality": true, "output_hash": "712076ad3c0fe74416b3590caa9acf19"}
+{"answer_extracted": "29", "equality": true, "output_hash": "cded4d7c0215fff85f3e4e10fe7219be"}
+{"answer_extracted": "200\u30d5\u30a3\u30fc\u30c8", "equality": true, "output_hash": "8756bf80cbdd56d995f2231d52b4dedd"}
+{"answer_extracted": "2", "equality": true, "output_hash": "53769f1502a696f6a563c7d9c56a4798"}
+{"answer_extracted": "$\\dfrac{2}{1005}$", "equality": true, "output_hash": "a9e97ad5988bdbb313418aa7b45d737b"}
+{"answer_extracted": "2", "equality": true, "output_hash": "035e2b70016e2af4b6d0eb3376b118e2"}
+{"answer_extracted": "1", "equality": true, "output_hash": "bafc8d99b2ae350614cc9af2dca29234"}
+{"answer_extracted": "41", "equality": false, "output_hash": "54e2074a3cc85de7780eefcf42c4e808"}
+{"answer_extracted": "202", "equality": true, "output_hash": "66be1bb11e3b4052078488f80680145b"}
+{"answer_extracted": "$\\dfrac{8}{15}$", "equality": true, "output_hash": "1bad0ffa73c5cedc5e3f9141ac0ec83b"}
+{"answer_extracted": "10", "equality": true, "output_hash": "34976d059d56d43e8e990745236163ee"}
+{"answer_extracted": "13", "equality": true, "output_hash": "b1c2e03fb7a7120acef829bea7c0fff8"}
+{"answer_extracted": "54 + 30\\sqrt{3}", "equality": false, "output_hash": "75ae591d7579d2a4cc3b9b9289f143f7"}
+{"answer_extracted": "2", "equality": true, "output_hash": "498e11a0120b408d04dbc9d593443061"}
+{"answer_extracted": "$36", "equality": true, "output_hash": "fd8fb71b26d0b8eab35a9cddeaaa584b"}
+{"answer_extracted": "15, 30 - \\dfrac{15}{p}, 2p^2 - p", "equality": false, "output_hash": "d7077bcb1f6822a40149f10afe8df5a4"}
+{"answer_extracted": "14", "equality": true, "output_hash": "ff90a96139a01756d473dfd314b1a140"}
+{"answer_extracted": "64", "equality": true, "output_hash": "a8c2439b3429d84eae0ec4f6cc1ddcdb"}
+{"answer_extracted": "y = -2x", "equality": true, "output_hash": "c6199d1ad7ff4a63f04b6f965b344c74"}
+{"answer_extracted": "20", "equality": true, "output_hash": "5417b7c4e44d9199cb760e3119c9e8ae"}
+{"answer_extracted": "\\(\\dfrac{1}{4}\\)", "equality": true, "output_hash": "5cb37ab3c8248d6166cc57990eec776d"}
+{"answer_extracted": "(2, 12) \u222a (12, 102)", "equality": true, "output_hash": "0d2f494cb22bef1ba9ec50fea232401a"}
+{"answer_extracted": "\\dfrac{5}{13}", "equality": true, "output_hash": "08329033118603b4fd79a4af91919c6f"}
+{"answer_extracted": "$\\frac{7}{2}$", "equality": true, "output_hash": "b2e9926972b92790031bcaaf463e9463"}
+{"answer_extracted": "-1", "equality": true, "output_hash": "74e3a0d01dea51f800dd2d8c1bee7783"}
+{"answer_extracted": "106", "equality": true, "output_hash": "54cc130feabdf46422e6b2ab4a25680b"}

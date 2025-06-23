@@ -1,0 +1,6 @@
+{
+    "Subgoal setting": "Where the model breaks down the problem into smaller, intermediate goals (e.g., 'To solve this, we first need to...' or 'First, I'll try to ..., then ...'",
+    "Backtracking": "Where the model realizes a path won't work and explicitly goes back to try a different approach. An example of backtracking is: 'Let me try again' or 'we need to try a different approach'.",
+    "Verification": "Where the model checks the correctness of the intermediate results or to make sure the final answer is correct.",
+    "Backward chaining": "Where the model works backward from its answer to see whether it can derive the variables in the original problem."
+}

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "gemini-batch-classification",
+  "private_key_id": "37d257631f1aae311612022ceb6c9778b01737dc",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCnqAxYTVeegkpD\neA5EkD+7wBIUpwLVdeIfYCeWE4TZ3QvdNruIUam+zu3RXwx9euSsVVGWlqkumYwP\nozpy88Iv27pcurzjhr/RV73LupT/vwxEhF0A2v9SJ5xbklj9ylbKxOfEITkCcJA4\ntbNUpgnrHPgnaB457/1OFXGzBqEVyCzJnglM+kqa/BiY15Eh7RDn4Mmp97iTZJIt\nvXV+N2S904pXK6o+X1mWYSG8k6u+qU0OdmVapoDWHMSQWgRAywpRzZLh92viYeQy\n65KpFu6TARVDAdwPM0PWzNpmwlUzV7XkMpoDo5njstxu4letJj+zuJWLBdqjcBXq\nzmEjOEV9AgMBAAECggEAJZkJE7Bcit57GwBMatHSiR88rsb5Wrdx+0lL91rvOxBY\nPcatbZeqsnCjYoWnPmiV6ZPElTm6PQoQH92iGO9TR/pFo8/41il80MyVcp+oFGZa\nsO7iEHQMN/dMGDkMnfWHWzenJhOxPjvSC/WrfrsxlDlN6UBvLt0D+EPU2KoO69w3\n3RSvs+N72Z/kCmQc3AI/YM837ZLY82lgtkiPyyp8hgxu7LHa721zF8gDFQ+AIB5d\nbsE4jycmkpd6UxdG3gY1f6JjpRrTyTP62IaCbrI3nMU5CJ+qoGoxCVgosQQRszh+\n9rKXVZ0A/nTNKcShOdRRZXH9PzTMTefYNwbzTwExHQKBgQDkHzucyeomEoRIyhj4\n8+5GqkHTkIyXQOz9r4icYUNvZ8jXLHoJBLXKQ+WcpDkMWl27XeZucvLWrU8iBZyo\nt4gcGQcmremS6qoDRWtpQamPoADG7vIMxLmBT6IqMhNiwAPqg07MSDTMWeinnu9y\nmbSc8qVy9r1MpmDirib4w2SQ8wKBgQC8JSh1dH94EgbOZEwZIHoE8KxGDc3iUJj8\nkxYjTaZ4ACJoLYT+GIsEIHRl6irXIz7y0DNPVRhdrdzKXkJ88I1MbIKSmkH7qjFI\n7MfAqbGBu/YnhceJModAWZ0phdKx3/+AxYY/iozxmp6mMmtYEKW/f7a3v3971/SQ\nrA9WksjrzwKBgAUeyli/k3jdS4jSuHLGDuAZLDcSdIVkmK0tBnT0He5fNvvVbLvN\nFkN++KVmbj1fveDZv7VU8SxuYWtTEuwainyO90EgADEjAUPnh/yp06N8pOfSLy6o\nL72+StaFnzfFNZFK9zbQnBbGIdm5UIiS+KHZNGt7LE6PIXeVDxzgTd6PAoGAaFcP\nFfxSiMsufR2AWlr5cG3sjDkxmbXq8f+8Qj3Y+SnR6wZ7f9MqnVJGWxK/SWphiZVP\nL0rY5XL7RDt8Ef/xzJVM4HKt7xyWkoPFz6IMMA+GVqrJWtvryBMqppFxpHW+I7Ln\nXau/uGlwXGkPwNoSoZ35PfP0hkDgf678Hp3u0V8CgYAjccPhB+LXFWhvUBsRj7+g\nLtWxJNiW3RyisxxWnM0VZ6VICh41zhnUf7ScWylDs5nzbgyBdH+QEwrJWUGsz8bJ\n+HUmSvC5EIzmTjagwOaOYCPNpCtFvhJrhZkJSr302oycf+i8W8/rOWLEnB6NiC3e\nXdm9rrp0AVH8Y3u1iebcKQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "vertex-runner-213@gemini-batch-classification.iam.gserviceaccount.com",
+  "client_id": "114371350709767842909",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vertex-runner-213%40gemini-batch-classification.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

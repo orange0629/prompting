@@ -1,0 +1,18 @@
+{
+  "Top-Down": "Where the model starts from a high-level principle, rule, or final goal and uses it to guide lower-level reasoning steps. Often signaled by phrases like 'Since we are trying to prove...', 'Given the rule...', or 'Let’s start from the conclusion and check...'",
+  "Bottom-Up": "Where the model starts from specific facts, examples, or given numbers and incrementally builds up toward the solution. Often signaled by phrases like 'We are given...', 'From this, we can see...', or 'Let’s start calculating...'",
+  "Focused": "Where the step stays narrowly focused on a single aspect or subproblem, rather than considering multiple angles. Often signaled by single-threaded logic like 'Now let’s solve for X' or 'Just focusing on...'",
+  "Broad": "Where the step considers multiple possibilities, variables, or solution paths. Often signaled by phrases like 'We could either...', 'There are several cases...', or 'One way to think about this is...'",
+  "Inductive": "Where the model generalizes from specific examples, patterns, or cases. Often signaled by 'In all these cases...', 'This suggests that...', or 'It seems that whenever...'",
+  "Deductive": "Where the model applies a general rule or known principle to reach a specific conclusion. Often signaled by 'According to...', 'By definition...', or 'Therefore, we know that...'",
+  "Sequential": "Where the step logically follows from the previous step and advances the reasoning linearly. Often signaled by 'Next, we...', 'Then...', or 'Building on the previous...'",
+  "Parallel": "Where the model introduces an alternative line of reasoning or handles multiple ideas at once. Often signaled by 'Alternatively...', 'In another case...', or 'Let’s now explore a different route...'",
+  "Data-Driven": "Where the step explicitly checks facts, numerical results, or prior evidence to validate reasoning. Often signaled by 'Based on the calculation above...', 'As shown before...', or 'This value matches...'",
+  "Hypothesis-Driven": "Where the step proposes a hypothetical assumption and tests or reasons from it. Often signaled by 'Suppose that...', 'Let’s assume...', or 'If this were true, then...'",
+  "Iterative": "Where the model clarifies or reformulates the question progressively through reasoning. Often signaled by 'This means...', 'So in other words...', or 'To be more precise...'",
+  "Immediate": "Where the model makes an upfront clarification or definition and proceeds without revisiting it. Often signaled by 'We are asked to...', 'The question gives...', or 'Let’s define... and move on.'",
+  "Subgoal setting": "Where the model breaks down the problem into smaller, intermediate goals (e.g., 'To solve this, we first need to...' or 'First, I'll try to ..., then ...'",
+  "Backtracking": "Where the model realizes a path won't work and explicitly goes back to try a different approach. An example of backtracking is: 'Let me try again' or 'we need to try a different approach'.",
+  "Verification": "Where the model checks the correctness of the intermediate results or to make sure the final answer is correct.",
+  "Backward chaining": "Where the model works backward from its answer to see whether it can derive the variables in the original problem."
+}
